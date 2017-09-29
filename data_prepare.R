@@ -164,21 +164,39 @@ SummerIntensitiesWeighted <- sample(SummerFires$INT, size=24000,  replace=T,  pr
 SummerIntensitiesWeighted <- as.numeric(SummerIntensitiesWeighted)
 SpringWeightedCatch <- as.numeric(SpringIntensitiesWeighted*PI)
 SummerWeightedCatch <- as.numeric(SummerIntensitiesWeighted*PI)
-#r1 <- rep("Spring", length(SpringWeightedCatch))
-#IntensityCat <- data.frame(SpringWeightedCatch,  r1)
-#colnames(IntensityCat)[1] <- "Intensity"
-#colnames(IntensityCat)[2] <- "Season"
-#r2 <- rep("Summer", length(SummerWeightedCatch))
-#IntensityCat2 <- data.frame(SummerWeightedCatch,  r2)
-#colnames(IntensityCat2)[1] <- "Intensity"
-#colnames(IntensityCat2)[2] <- "Season"
-#xxx <-  rbind(IntensityCat2, IntensityCat)
-#xxx$Season  <-  factor(xxx$Season,  levels = c("Spring",  "Summer"))
+
 mean(SpringWeightedCatch)
 mean(SummerWeightedCatch)
-par(mfrow=c(1, 2))
-boxplot(INT~SprSummer,  data=Intensities,  ylab="Fire intensity",  ylab="Fire season",  main="Raw Intensities")
-boxplot(Intensity~Season,  data=xxx,  ylab="Fire intensity",  ylab="Fire season",  main="weighted intensities +Catchpole")
+
+
+#
+# save prepared data
+#
+plots_file = file("data/Plots.Rdata", "wb")
+save(Plots, file=plots_file)
+close(plots_file)
+
+tree_file = file("data/Tree.Rdata", "wb")
+save(Tree, file=tree_file)
+close(tree_file)
+
+intensities_file = file("data/Intensities.Rdata", "wb")
+save(Intensities, file=intensities_file)
+close(intensities_file)
+
+spring_file = file("data/spring_weighted_catch.Rdata", "wb")
+save(SpringWeightedCatch, file=spring_file)
+close(spring_file)
+
+summer_file = file("data/summer_weighted_catch.Rdata", "wb")
+save(SummerWeightedCatch , file=summer_file)
+close(summer_file)
+
+
+
+#par(mfrow=c(1, 2))
+#boxplot(INT~SprSummer,  data=Intensities,  ylab="Fire intensity",  ylab="Fire season",  main="Raw Intensities")
+#boxplot(Intensity~Season,  data=xxx,  ylab="Fire intensity",  ylab="Fire season",  main="weighted intensities +Catchpole")
 #boxplot(SpringWeightedCatch)
 #boxplot(SummerWeightedCatch)
 
