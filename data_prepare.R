@@ -1,0 +1,203 @@
+library("zoo")
+
+##Get the data##
+###TREES FOR PSP AND TSP
+###############################################################################
+####Do separately the tree and sapling PSP
+tree_PSP  <-  read.csv("data/Tree_list.csv",  colClasses = "character")
+SaplingPSP  <-  read.csv("data/Yos_result2.csv", 
+                         colClasses = "character", 
+                         header=FALSE )
+Tr <- subset(tree_PSP,  select=c("ID_PEP_MES",  "ESSENCE","DBH"))
+length(1:dim(Tr)[1])
+
+names(SaplingPSP)[names(SaplingPSP)=="V2"] = "ID_PEP_MES"
+names(SaplingPSP)[names(SaplingPSP)=="V3"] = "ESSENCE"
+names(SaplingPSP)[names(SaplingPSP)=="V4"] = "DBH"
+SaplingPSP$V5  <-  NULL
+SaplingPSP$V1  <-  NULL
+head(SaplingPSP)
+length(1:dim(SaplingPSP)[1])
+PS <- rbind(SaplingPSP,  Tr)
+head(PS)
+length(1:dim(PS)[1])
+
+###############Temporal###
+TreeT  <-  read.table("data/TemporalTrees.txt", 
+                      colClasses = "character", 
+                      sep = ",", 
+                      quote="\"")
+
+length(1:dim(TreeT)[1])
+head(TreeT)
+TreeT$DBH <- as.numeric(TreeT$DBH)
+TreeT <- subset(TreeT,  select=c("ID_PET_MES",  "ESSENCE",  "DBH"))
+names(TreeT)[names(TreeT)=="ID_PET_MES"] = "ID_PEP_MES"
+############merge PSP trees with Temporal trees
+Tree <- rbind(PS,  TreeT)
+head(TreeT)
+length(1:dim(Tree)[1])
+Tree$DBH  <-  as.numeric(Tree$DBH)
+Tree$ESSENCE  <-  as.factor(Tree$ESSENCE)
+Tree  <-  Tree[-which(Tree$DBH > 90), ]
+Tree  <-  na.omit(Tree)
+#write.csv(Tree, file ="C:\\Users\\yomiq\\Documents\\YOSDATA\\LAVAL\\ModelOutput2\\Stratified_trees.txt")
+#### PLOTS PSP AND TSP###############################################
+y  <-  read.table("data/union_plots_export.txt",  
+                  colClasses = "character", 
+                  header=FALSE, 
+                  sep = ",", 
+                  quote="\"")
+
+colnames(y)[1] <- "ID_PEP_MES"
+colnames(y)[2] <- "LATITUDE"
+colnames(y)[3] <- "LONGITUDE"
+colnames(y)[4] <- "SREG_ECO"
+colnames(y)[5] <- "FIRE_CODE"
+colnames(y)[6] <- "DOM_BIO"
+colnames(y)[7] <- "ALTITUDE"
+colnames(y)[8] <- "DEP_SUR"
+colnames(y)[9] <- "CL_DRAI"
+colnames(y)[10] <- "TYPE_ECO"
+colnames(y)[11] <- "Sur_Dep"
+colnames(y)[12] <- "Deposit"
+colnames(y)[13] <- "Deposito"
+colnames(y)[14] <- "Total_BA"
+colnames(y)[15] <- "Spruce_BA"
+colnames(y)[16] <- "JackPine_BA"
+colnames(y)[17] <- "stands"
+colnames(y)[18] <- "shannon"
+AllPlots <- y
+#AllPlots$shannon <- as.numeric(AllPlots$shannon)
+#AllPlots <-  AllPlots[- which(AllPlots$shannon == 0), ]
+AllPlots <-  AllPlots[- which(AllPlots$stands== "0"), ]
+AllPlots <-  AllPlots[- which(AllPlots$stands== "RxEn"), ]
+AllPlots <-  AllPlots[- which(AllPlots$stands== "RxRx"), ]
+AllPlots <-  AllPlots[- which(AllPlots$stands== "EnRx"), ]
+AllPlots$stands <- factor(AllPlots$stands)
+AllPlots$ID_PEP_MES <- as.factor(AllPlots$ID_PEP_MES)
+AllPlots$stands <- as.factor(AllPlots$stands)
+AllPlots$FIRE_CODE <- as.factor(AllPlots$FIRE_CODE)
+AllPlots$FIRE_CODE_  <- AllPlots$FIRE_CODE
+######Create new deposit classes differentiating among 1_Till.Thick,  1_Till.Thin,  M,  R etc..  Differentiating the substrate thickness only for the Till group
+AllPlots$Dep <-  ifelse(AllPlots$Deposito=="1A"|AllPlots$Deposito=="1","1_Till.Thick",  ifelse(AllPlots$Deposito=="1AY"| AllPlots$Deposito=="1AM"| AllPlots$Deposito=="M1A" , "1_Till.Thin"
+                                                                                                , ifelse(AllPlots$Deposito=="2","2_Fluvio_glaciar", ifelse(AllPlots$Deposito=="3","3_Fluvial"
+                                                                                                                                                            , ifelse( AllPlots$Deposito=="4","4_Lacustre", ifelse(AllPlots$Deposito=="5","5_Marins"
+                                                                                                                                                                                                                   , ifelse(AllPlots$Deposito=="6","6_Littoraux_marins", ifelse(AllPlots$Deposito=="7","7_Organique", ifelse(AllPlots$Deposito=="8","8_Depots_pentes"
+                                                                                                                                                                                                                                                                                                                               , ifelse(AllPlots$Deposito=="R"| AllPlots$Deposito=="R1A","Rocheux","Other"))))))))))
+####Merge drainage classes 0 and 1  and 5 and 6
+AllPlots$Drenaje <- ifelse(AllPlots$CL_DRAI=="0" |AllPlots$CL_DRAI=="1" ,  "1_DRY",  ifelse(AllPlots$CL_DRAI=="2","2_Bon",  ifelse(AllPlots$CL_DRAI=="3","3_Modere", 
+                                                                                                                                    ifelse(AllPlots$CL_DRAI=="4","4_Imperfait", ifelse(AllPlots$CL_DRAI=="5" |AllPlots$CL_DRAI=="6" ,  "5_WET",  "Other")))))
+###########################################################################################################################################
+SubsetPlot  <-  subset(AllPlots,  (Drenaje =="2_Bon" | Drenaje=="3_Modere"| Drenaje=="4_Imperfait") & (Dep=="1_Till.Thin"|Dep=="1_Till.Thick"| Dep== "2_Fluvio_glaciar"), select = c(1:length(AllPlots)))
+Plots <- SubsetPlot
+head(Plots)
+length(1:dim(Plots)[1]) ##4882
+###GET INTENSITY FILE FOR THE C-2 FUEL TYPE#####################################
+Intensity <- read.csv("data/Sopfeu.csv",  colClasses = "character", header=TRUE, sep = ",")
+Intensity <-  Intensity[which(Intensity$JA== "1"), ]
+Intensity <-  Intensity[which(Intensity$INT> 1), ]
+Intensity <-  Intensity[which(Intensity$SupFin> 0), ]
+IntensityC2  <-  Intensity[which(Intensity$Comb== "C2"), ]
+colnames(IntensityC2)[21] <- "FIRE_CODE"
+IntensityC2  <-  subset(IntensityC2,  (FIRE_CODE=="A2" | FIRE_CODE =="B3"| FIRE_CODE =="C3"|FIRE_CODE =="D4"|FIRE_CODE =="E1"|FIRE_CODE =="E3") , select = c(1:length(IntensityC2)))
+#anova(lm(INT~FIRE_CODE,  data=IntensityC2))
+length(1:dim(IntensityC2)[1])  ##1111 C2 fuel typeall fire regions
+IntensityC2$Concatanate <- paste(IntensityC2$Annee, IntensityC2$Numero, IntensityC2$INT, sep = "_")
+######################################
+###add season###
+IntensitySS <- read.csv("data/IntensityData.csv", colClasses = "character",  header=TRUE, sep = ",")
+IntensitySS <- na.omit(IntensitySS)
+IntensitySS <-  IntensitySS[- which(IntensitySS$INT== "0"), ]
+IntensitySS <-  IntensitySS[which(IntensitySS$JA== "1"), ]
+IntensitySS <-  IntensitySS[which(IntensitySS$Comb== "C2"), ]
+IntensitySS <-  IntensitySS[which(IntensitySS$Domaine== "6"), ]
+length(IntensitySS[, 1])##1773
+strDates  <-  as.character(IntensitySS$Dates)
+IntensitySS$Dates  <-  as.Date(IntensitySS$Dates,  "%Y/%m/%d")
+IntensitySS$date1  <-  as.yearmon(IntensitySS$Dates)
+IntensitySS$Season <-  as.numeric(format(IntensitySS$date1,  "%m"))
+#IntensitySS$iLat <-  round(IntensitySS$iLat)
+IntensitySS$Concatanate <- paste(IntensitySS$Annee, IntensitySS$Numero, IntensitySS$INT,  sep = "_")
+#############################
+Intensities <-  merge(IntensitySS, IntensityC2,  by=c("Concatanate"))
+length(1:dim(Intensities)[1]) ##1111
+Intensities$Annee.y  <-  NULL
+Intensities$Comb.y  <-  NULL
+Intensities$DateRap  <-  NULL
+Intensities$Domaine.y  <-  NULL
+Intensities$iLat.y  <-  NULL
+Intensities$iLon.y  <-  NULL
+Intensities$INT.y  <-  NULL
+Intensities$JA.y  <-  NULL
+Intensities$Numero.y  <-  NULL
+names(Intensities)[c(2, 3, 4, 5, 6, 7, 8, 12)]  <-  c("Annee","JA","Comb","iLat",  "iLon", 
+                                                      "INT","Domaine",  "Numero")
+Intensities$SprSummer <- ifelse(Intensities$Season=="4"|Intensities$Season=="5"|Intensities$Season=="6","Spring","Summer")
+as.factor(Intensities$SprSummer)
+#boxplot(INT~SprSummer,  data=Intensities,  ylab="Fire intensity",  ylab="Fire season")
+#anova(lm(INT~SprSummer,  data=Intensities))
+
+###Apply Catchpole and size weighted
+
+knownpoints <- data.frame(x <- c(0.04, 0.1, 0.13, 0.16, 0.21, 0.28, 0.37, 0.48, 0.63, 0.7, 0.8, 0.9, 1), 
+                          y <- c(1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.18, 0.15, 0.1, 0.05))
+aim <- runif(24000, 0, 1)
+yos <- approx(knownpoints$x, knownpoints$y,  xout=aim,  rule=1)
+ProportionalIntensities <- yos$y
+ProportionalIntensities <- na.omit(ProportionalIntensities)
+PI <- sample(ProportionalIntensities,  24000,  replace = T,  prob = NULL)
+SpringFires <- Intensities[which(Intensities$SprSummer== "Spring"), ]
+length(1:dim(SpringFires)[1])##737
+SpringFires$SupFin <- as.numeric(SpringFires$SupFin)
+TotalFireSizeSpring <- sum(SpringFires$SupFin)
+SpringFires$Weight <- SpringFires$SupFin/TotalFireSizeSpring
+SpringIntensitiesWeighted <- sample(SpringFires$INT, size=24000,  replace=T,  prob=SpringFires$Weight)
+SpringIntensitiesWeighted <- as.numeric(SpringIntensitiesWeighted)
+
+SummerFires <- Intensities[which(Intensities$SprSummer== "Summer"), ]
+length(1:dim(SummerFires)[1])##374
+SummerFires$SupFin <- as.numeric(SummerFires$SupFin)
+TotalFireSizeSpring <- sum(SummerFires$SupFin)
+SummerFires$Weight <- SummerFires$SupFin/TotalFireSizeSpring
+SummerIntensitiesWeighted <- sample(SummerFires$INT, size=24000,  replace=T,  prob=SummerFires$Weight)
+SummerIntensitiesWeighted <- as.numeric(SummerIntensitiesWeighted)
+SpringWeightedCatch <- as.numeric(SpringIntensitiesWeighted*PI)
+SummerWeightedCatch <- as.numeric(SummerIntensitiesWeighted*PI)
+#r1 <- rep("Spring", length(SpringWeightedCatch))
+#IntensityCat <- data.frame(SpringWeightedCatch,  r1)
+#colnames(IntensityCat)[1] <- "Intensity"
+#colnames(IntensityCat)[2] <- "Season"
+#r2 <- rep("Summer", length(SummerWeightedCatch))
+#IntensityCat2 <- data.frame(SummerWeightedCatch,  r2)
+#colnames(IntensityCat2)[1] <- "Intensity"
+#colnames(IntensityCat2)[2] <- "Season"
+#xxx <-  rbind(IntensityCat2, IntensityCat)
+#xxx$Season  <-  factor(xxx$Season,  levels = c("Spring",  "Summer"))
+mean(SpringWeightedCatch)
+mean(SummerWeightedCatch)
+par(mfrow=c(1, 2))
+boxplot(INT~SprSummer,  data=Intensities,  ylab="Fire intensity",  ylab="Fire season",  main="Raw Intensities")
+boxplot(Intensity~Season,  data=xxx,  ylab="Fire intensity",  ylab="Fire season",  main="weighted intensities +Catchpole")
+#boxplot(SpringWeightedCatch)
+#boxplot(SummerWeightedCatch)
+
+
+##################
+##Compare distribution of sampled intensities weighted/unweighted cases
+#
+#IUnWeighted <- sample(Intensities$INT, size=3000,  replace=T)
+#IWeighted <- sample(Intensities$INT, size=3000,  replace=T,  prob=Intensities$Weight)
+#par(mfrow=c(1, 2))
+#hist(IUnWeighted,  main="Unweighted") #unweighted
+#hist(IWeighted, main="Weighted")
+####Catchpole
+#
+###Correct head fire intensity using Catchpole
+#IUnWeightedCatch <- as.numeric(IUnWeighted*PI)
+#IWeightedCatch <- as.numeric(IWeighted*PI)
+#par(mfrow=c(1, 2))
+#hist(IUnWeightedCatch,  main="Unweighted w/catchpole") #unweighted
+#hist(IWeightedCatch, main="Weighted w/catchpole")
+#
+
