@@ -28,13 +28,13 @@ ps <- rbind(sapling_psp,  Tr)
 tree_tmp <- read.table("data/TemporalTrees.txt",
                     colClasses = "character",
                     sep = ",",
-                    quote="\"")
+                    quote = "\"")
 
 length(1:dim(tree_tmp)[1])
 head(tree_tmp)
 tree_tmp$DBH <- as.numeric(tree_tmp$DBH)
-tree_tmp <- subset(tree_tmp,  select=c("ID_PET_MES",  "ESSENCE",  "DBH"))
-names(tree_tmp)[names(tree_tmp)=="ID_PET_MES"] = "ID_PEP_MES"
+tree_tmp <- subset(tree_tmp,  select = c("ID_PET_MES",  "ESSENCE",  "DBH"))
+names(tree_tmp)[names(tree_tmp) == "ID_PET_MES"] <- "ID_PEP_MES"
 
 #######################################
 # merge PSP trees with Temporal trees #
@@ -54,7 +54,7 @@ Tree <- na.omit(Tree)
 #################################################
 y <- read.table("data/union_plots_export.txt",
                 colClasses = "character",
-                header=FALSE,
+                header = FALSE,
                 sep = ",",
                 quote="\"")
 
