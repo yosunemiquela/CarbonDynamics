@@ -7,40 +7,40 @@ library("zoo")
 tree_psp <- read.csv("data/Tree_list.csv",  colClasses = "character")
 sapling_psp <- read.csv("data/Yos_result2.csv",
                         colClasses = "character",
-                        header=FALSE )
-Tr <- subset(tree_psp,  select=c("ID_PEP_MES",  "ESSENCE","DBH"))
+                        header = FALSE)
+Tr <- subset(tree_psp,  select = c("ID_PEP_MES", "ESSENCE", "DBH"))
 length(1:dim(Tr)[1])
 
-names(sapling_psp)[names(sapling_psp)=="V2"] = "ID_PEP_MES"
-names(sapling_psp)[names(sapling_psp)=="V3"] = "ESSENCE"
-names(sapling_psp)[names(sapling_psp)=="V4"] = "DBH"
+names(sapling_psp)[names(sapling_psp) == "V2"] <- "ID_PEP_MES"
+names(sapling_psp)[names(sapling_psp) == "V3"] <- "ESSENCE"
+names(sapling_psp)[names(sapling_psp) == "V4"] <- "DBH"
 sapling_psp$V5 <- NULL
 sapling_psp$V1 <- NULL
 
 length(1:dim(sapling_psp)[1])
-PS <- rbind(sapling_psp,  Tr)
+ps <- rbind(sapling_psp,  Tr)
 
 
 
 #######################
 # load temporal plots #
 #######################
-TreeT <- read.table("data/TemporalTrees.txt",
+tree_tmp <- read.table("data/TemporalTrees.txt",
                     colClasses = "character",
                     sep = ",",
                     quote="\"")
 
-length(1:dim(TreeT)[1])
-head(TreeT)
-TreeT$DBH <- as.numeric(TreeT$DBH)
-TreeT <- subset(TreeT,  select=c("ID_PET_MES",  "ESSENCE",  "DBH"))
-names(TreeT)[names(TreeT)=="ID_PET_MES"] = "ID_PEP_MES"
+length(1:dim(tree_tmp)[1])
+head(tree_tmp)
+tree_tmp$DBH <- as.numeric(tree_tmp$DBH)
+tree_tmp <- subset(tree_tmp,  select=c("ID_PET_MES",  "ESSENCE",  "DBH"))
+names(tree_tmp)[names(tree_tmp)=="ID_PET_MES"] = "ID_PEP_MES"
 
 #######################################
 # merge PSP trees with Temporal trees #
 #######################################
-Tree <- rbind(PS,  TreeT)
-head(TreeT)
+Tree <- rbind(ps,  tree_tmp)
+head(tree_tmp)
 length(1:dim(Tree)[1])
 Tree$DBH <- as.numeric(Tree$DBH)
 Tree$ESSENCE <- as.factor(Tree$ESSENCE)
@@ -94,9 +94,9 @@ AllPlots$FIRE_CODE_  <- AllPlots$FIRE_CODE
 ## 1_Till.Thin, M, R etc..  Differentiating the substrate thickness ##
 ## only for the Till group                                          ##
 ######################################################################
-AllPlots$Dep <- ifelse(AllPlots$Deposito=="1A" | AllPlots$Deposito=="1",
+AllPlots$Dep <- ifelse(AllPlots$Deposito == "1A" | AllPlots$Deposito=="1",
                        "1_Till.Thick",
-                ifelse(AllPlots$Deposito=="1AY" | AllPlots$Deposito=="1AM" | AllPlots$Deposito=="M1A",
+                ifelse(AllPlots$Deposito == "1AY" | AllPlots$Deposito=="1AM" | AllPlots$Deposito=="M1A",
                        "1_Till.Thin",
                 ifelse(AllPlots$Deposito=="2",
                        "2_Fluvio_glaciar",
