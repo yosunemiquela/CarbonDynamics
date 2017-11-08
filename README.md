@@ -4,9 +4,6 @@
 
 
 
-## How to run this software
-
-
 ### Data acquisition
 
 
@@ -30,3 +27,6 @@ Also these plots are generated:
 
 
 ### Run model
+
+
+    $ R < simulation_experiments.R
