@@ -1,6 +1,6 @@
 library("reshape")
 library("plotrix")
-library("relaimpo")
+library("relimp")
 library("MASS")
 library("car")
 library("ggplot2")
@@ -9,7 +9,6 @@ library("class")
 library("Hmisc")
 library("scatterplot3d")
 library("reshape")
-library("fitdistrplus")
 library("compare")
 library("truncreg")
 library("truncdist")
@@ -18,7 +17,7 @@ library("actuar")
 library("moments")
 library("vegan")
 library("stats")
-library("utils")
+source("utils.R")
 
 
 
@@ -26,14 +25,17 @@ library("utils")
 ## full model ##
 ################
 
-exe <- function(stand, Y, FRI, Season) {Sampled <- subpop (reg = c("A2", "D4", "B3", "C3", "E1", "E3"), st = c("EnEn"), d = Plots)
+exe <- function(Y, FRI, Season, Tree, Plots) {
+    Sampled <- subpop (reg = c("A2", "D4", "B3", "C3", "E1", "E3"), st = c("EnEn"), d = Plots)
     Sampled <- Sampled[sample(1:dim(Sampled)[1], size = 1, replace = T), ]
     Tree.List <- GetTrees (Tree, Plots = Sampled)
-    as.character(Tree.List$DBH) as.factor(Tree.List$ESSENCE)
+    as.character(Tree.List$DBH) 
+    as.factor(Tree.List$ESSENCE)
     Tree.List <- as.data.frame(lapply(Tree.List[, ], function(x)rep(x, 25)))
     range.DBH <- c(seq(1, 30, by = 2), 100)
     Tree.List$DBH <- as.numeric(Tree.List$DBH)
-
+    stand <- table(cut(Tree.List$DBH, breaks=range.DBH, labels=seq(1,15)))
+    stand[1:4] <- stand[1:4]*10
     basal_big_class <- 0.0707905544
     BAB <- rep(0, 100)
     TBA <- 3.142 * (Tree.List[Tree.List[, 3]>31, 3]/200)^2
@@ -127,7 +129,7 @@ exe <- function(stand, Y, FRI, Season) {Sampled <- subpop (reg = c("A2", "D4", "
     BioMass <- matrix(c(Stemwood(dbhq), Bark(dbhq), Branches(dbhq), Needles(dbhq), Coarse(dbhq), Fineroots(dbhq)), nrow = 6,
                       ncol = length(dbhq), byrow = TRUE)
     BioMassCarbon <- BioMass * biocar_factor  # Biomass C per diameter class
-    InitialCBiomass <- sum(BioMassCarbon% * %as.matrix(stand))  # initial biomass for the site
+    InitialCBiomass <- sum(BioMassCarbon%*%as.matrix(stand))  # initial biomass for the site
     ICB <- InitialCBiomass  # initial biomass for the site
     NetPrimaryProductivity <- numeric(Y)
     TotalLiveBiomass <- numeric(Y)
@@ -181,7 +183,7 @@ exe <- function(stand, Y, FRI, Season) {Sampled <- subpop (reg = c("A2", "D4", "
         rownames(CarbonPoolTransferMatrix) <- c("Snags", "Snagbranch", "Medium", "AGfast", "AGveryfast", "AGslow",
                                                 "BGveryfast", "BGfast", "BGslow")
 
-        tmp <- as.vector(t(CPool)% * %CarbonPoolTransferMatrix)
+        tmp <- as.vector(t(CPool)%*%CarbonPoolTransferMatrix)
         SoilCAtmFlux <- tmp[1]
 
 
@@ -201,16 +203,16 @@ exe <- function(stand, Y, FRI, Season) {Sampled <- subpop (reg = c("A2", "D4", "
         Heightgrowth <- growth * HeightUpdated
 
         # Calculate Biomass due to growth
-        GrowthCBiomass <- sum(BioMassCarbon % * % as.matrix(stand))  # calculate biomass due to growth
+        GrowthCBiomass <- sum(BioMassCarbon %*% as.matrix(stand))  # calculate biomass due to growth
                                                                      # Biomass that has not been lost to turnover or mortality
         Parcela[y, ] <- stand  # stand after regeneration, captures regeneration pulses
         delta <- (GrowthCBiomass-ICB)
 
         # Apply turnover
         # match IPCC Good Practice Guidance
-        Stemwoodsmall <- BioMassCarbon[1, 1:4] % * % (stand[1:4])
-        Barkmerchantable <- BioMassCarbon[2, 5:15] % * % (stand[5:15])
-        LiveBiomassCPools <- BioMassCarbon % * % (stand) # biomass C kg/ha
+        Stemwoodsmall <- BioMassCarbon[1, 1:4] %*% (stand[1:4])
+        Barkmerchantable <- BioMassCarbon[2, 5:15] %*% (stand[5:15])
+        LiveBiomassCPools <- BioMassCarbon %*% (stand) # biomass C kg/ha
         LiveBiomassCPoolsCorrected  <- matrix(0, nrow = 5, ncol = 1)
         LiveBiomassCPoolsCorrected[1, 1] <- LiveBiomassCPools[1, 1] - Stemwoodsmall + Barkmerchantable
         LiveBiomassCPoolsCorrected[2, 1] <- LiveBiomassCPools[2, 1] - Barkmerchantable + LiveBiomassCPools[3, 1] +
@@ -236,7 +238,7 @@ exe <- function(stand, Y, FRI, Season) {Sampled <- subpop (reg = c("A2", "D4", "
                                      "Needles", "Coarse", "Fine")
 
 
-        ctmp <- as.vector(t(LiveBiomassCPoolsCorrected)% * %Input_Matrix2)  # turnover
+        ctmp <- as.vector(t(LiveBiomassCPoolsCorrected)%*%Input_Matrix2)  # turnover
         BiomassLostTurnover <- sum(ctmp[6:14])
 
         # Carbon fluxes
@@ -316,7 +318,7 @@ exe <- function(stand, Y, FRI, Season) {Sampled <- subpop (reg = c("A2", "D4", "
 
 
        # Update biomass
-        Biomass <- sum(BioMassCarbon % * % as.matrix(stand))
+        Biomass <- sum(BioMassCarbon %*% as.matrix(stand))
         ICB <- Biomass
 
         # Dynamically updating crown ratios and heights of recruits (natural regenerated and fire derived)

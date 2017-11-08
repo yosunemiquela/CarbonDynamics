@@ -27,7 +27,7 @@ ps <- rbind(sapling_psp, Tr)
 #######################
 tree_tmp <- read.table("data/TemporalTrees.txt",
                     colClasses = "character",
-                    sep = ", ",
+                    sep = ",",
                     quote = "\"")
 
 length(1:dim(tree_tmp)[1])
@@ -55,7 +55,7 @@ Tree <- na.omit(Tree)
 y <- read.table("data/union_plots_export.txt",
                 colClasses = "character",
                 header = FALSE,
-                sep = ", ",
+                sep = ",",
                 quote = "\"")
 
 colnames(y)[1] <- "ID_PEP_MES"
@@ -159,7 +159,7 @@ Plots <- subsetPlot
 Intensity <- read.csv("data/Sopfeu.csv",
                       colClasses = "character",
                       header = TRUE,
-                      sep = ", ")
+                      sep = ",")
 Intensity <- Intensity[which(Intensity$JA == "1"), ]
 Intensity <- Intensity[which(Intensity$INT > 1), ]
 Intensity <- Intensity[which(Intensity$SupFin > 0), ]
@@ -186,7 +186,7 @@ IntensityC2$Concatanate <- paste(IntensityC2$Annee,
 #####################
 IntensitySS <- read.csv("data/IntensityData.csv",
                         colClasses = "character",
-                        header = TRUE, sep = ", ")
+                        header = TRUE, sep = ",")
 IntensitySS <- na.omit(IntensitySS)
 IntensitySS <- IntensitySS[- which(IntensitySS$INT == "0"), ]
 IntensitySS <- IntensitySS[which(IntensitySS$JA == "1"), ]

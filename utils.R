@@ -184,14 +184,14 @@ Fineroots <- function(dbh){  # <5mm. kg/tree Chen et al. 2004
 
 SnagsCarbon <- function(mortality, BioMassCarbon) {
     snags <- mortality
-    Stemwoodbig <- BioMassCarbon[1, 5:15] % * % (snags[5:15])
-    Barkmerchantable <- BioMassCarbon[2, 5:15] % * % (snags[5:15])
-    Stemwoodsmall <- BioMassCarbon[1, 1:4] % * % (snags[1:4])
-    Barksmall <- BioMassCarbon[2, 1:4] % * % (snags[1:4])
-    Branches <- BioMassCarbon[3, 1:15] % * % (snags[1:15])
-    Foliage <- BioMassCarbon[4, 1:15] % * % (snags[1:15])
-    CRoot <- BioMassCarbon[5, 1:15] % * % (snags[1:15])
-    FRoot <- BioMassCarbon[6, 1:15] % * % (snags[1:15])
+    Stemwoodbig <- BioMassCarbon[1, 5:15] %*% (snags[5:15])
+    Barkmerchantable <- BioMassCarbon[2, 5:15] %*% (snags[5:15])
+    Stemwoodsmall <- BioMassCarbon[1, 1:4] %*% (snags[1:4])
+    Barksmall <- BioMassCarbon[2, 1:4] %*% (snags[1:4])
+    Branches <- BioMassCarbon[3, 1:15] %*% (snags[1:15])
+    Foliage <- BioMassCarbon[4, 1:15] %*% (snags[1:15])
+    CRoot <- BioMassCarbon[5, 1:15] %*% (snags[1:15])
+    FRoot <- BioMassCarbon[6, 1:15] %*% (snags[1:15])
     SnagC <- Stemwoodbig + Barkmerchantable
     SnagbranchC <- Branches + Stemwoodsmall + Barksmall
     SnagFoliage <- Foliage

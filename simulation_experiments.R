@@ -1,7 +1,20 @@
+source("carbon_dynamics.R")
+source("utils.R")
+
+
+load("data/Plots.Rdata", .GlobalEnv)
+
+load("data/Tree.Rdata")
+
+load("data/spring_weighted_catch.Rdata")
+Spring <- SpringWeightedCatch
+
+#load("data/summer_weighted_catch.Rdata")
+
 set.seed(10)
-n.iter <- 1000      # plots to check
+n.iter <- 10      # plots to check
 Y <- 4800
-FRI <- 60    # change according to the FRI to evaluate
+FRI <- 2000    # change according to the FRI to evaluate
 
 
 
@@ -46,7 +59,7 @@ do.call(rbind, DOM_Inputs_list)
 
 
 for (i in 1:n.iter) {
-    CarbonModel <- exe(stand, Y, FRI, SpringWeightedCatch)
+    CarbonModel <- exe(Y, FRI, Spring, Tree, Plots)
     Ba_s[i, ] <- CarbonModel$BA
     Structure_s[i, ] <- CarbonModel$Structure
     Recruits_s[i, ] <- CarbonModel$Recruits
@@ -71,7 +84,7 @@ for (i in 1:n.iter) {
 }
 
 Year <- 4800
-plots <- 1000
+plots <- n.iter
 
 
 #Season 1 Spring #2 Summer
@@ -108,40 +121,40 @@ FRI60Summer <- cbind (Season, FireReturnInterval, StandStructure, BasalArea, Bio
                       NPP, NEP, SoilRespiration, BiomassTurnover, Snags, SnagBranch,
                       AGMedium, AGfast, AGveryfast, AGslow, BGveryfast, BGfast, BGslow, SoilCStock,
                       EcosystemCStock)
-save("FRI60Summer", file =  "FRI60_Summer_Newest.RData")
+save("FRI60Summer", file =  "data/out/FRI60_Summer.RData")
 
 FRI100Summer <- cbind (Season, FireReturnInterval, StandStructure, BasalArea, BiomassLiveCStock, Recruitment,
                        NPP, NEP, SoilRespiration, BiomassTurnover, Snags, SnagBranch,
                        AGMedium, AGfast, AGveryfast, AGslow, BGveryfast, BGfast, BGslow, SoilCStock,
                        EcosystemCStock)
-save("FRI100Summer", file =  "FRI100_Summer_Newest.RData")
+save("FRI100Summer", file =  "data/out/FRI100_Summer.RData")
 
 FRI150Summer <- cbind (Season, FireReturnInterval, StandStructure, BasalArea, BiomassLiveCStock, Recruitment,
                        NPP, NEP, SoilRespiration, BiomassTurnover, Snags, SnagBranch,
                        AGMedium, AGfast, AGveryfast, AGslow, BGveryfast, BGfast, BGslow, SoilCStock,
                        EcosystemCStock)
-save("FRI150Summer", file =  "FRI150_Summer_Newest.RData")
+save("FRI150Summer", file =  "data/out/FRI150_Summer.RData")
 
 FRI300Summer <- cbind (Season, FireReturnInterval, StandStructure, BasalArea, BiomassLiveCStock, Recruitment,
                        NPP, NEP, SoilRespiration, BiomassTurnover, Snags, SnagBranch,
                        AGMedium, AGfast, AGveryfast, AGslow, BGveryfast, BGfast, BGslow, SoilCStock,
                        EcosystemCStock)
-save("FRI300Summer", file =  "FRI300_Summer_Newest.RData")
+save("FRI300Summer", file =  "data/out/FRI300_Summer.RData")
 
 FRI700Summer <- cbind (Season, FireReturnInterval, StandStructure, BasalArea, BiomassLiveCStock, Recruitment,
                        NPP, NEP, SoilRespiration, BiomassTurnover, Snags, SnagBranch,
                        AGMedium, AGfast, AGveryfast, AGslow, BGveryfast, BGfast, BGslow, SoilCStock,
                        EcosystemCStock)
-save("FRI700Summer", file =  "FRI700_Summer_Newest.RData")
+save("FRI700Summer", file =  "data/out/FRI700_Summer.RData")
 
 FRI1200Summer <- cbind (Season, FireReturnInterval, StandStructure, BasalArea, BiomassLiveCStock, Recruitment,
                         NPP, NEP, SoilRespiration, BiomassTurnover, Snags, SnagBranch,
                         AGMedium, AGfast, AGveryfast, AGslow, BGveryfast, BGfast, BGslow, SoilCStock,
                         EcosystemCStock)
-save("FRI1200Summer", file =  "FRI1200_Summer_Newest.RData")
+save("FRI1200Summer", file =  "data/out/FRI1200_Summer.RData")
 
 FRINFSummer <- cbind (Season, FireReturnInterval, StandStructure, BasalArea, BiomassLiveCStock, Recruitment,
                       NPP, NEP, SoilRespiration, BiomassTurnover, Snags, SnagBranch,
                       AGMedium, AGfast, AGveryfast, AGslow, BGveryfast, BGfast, BGslow, SoilCStock,
                       EcosystemCStock)
-save("FRINFSummer", file =  "FRINF_Summer_Newest.RData")
+save("FRINFSummer", file =  "data/out/FRINF_Summer.RData")
