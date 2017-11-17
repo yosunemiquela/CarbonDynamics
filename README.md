@@ -2,7 +2,7 @@
 
 ## About this model
 
-Hybrid model that simulates forest carbon dynamics. It is composed of three modules that interact dynamically: stand dynamics, carbon dynamic and fire severity. It operates at the scale of 1.0 ha. It calculates and tracks carbon stocks in nine above- and belowground pools.
+Hybrid model that simulates forest carbon dynamics. It is composed of three modules that interact dynamically: stand dynamics, carbon dynamics and fire severity. It operates at the scale of 1.0 ha. It calculates and tracks carbon stocks in nine above- and belowground pools and estimates carbon fluxes.
 
 ### Data acquisition
 
