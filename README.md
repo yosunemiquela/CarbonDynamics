@@ -16,7 +16,7 @@ You must run the data_prepare.R script, like so:
     $  cd /path/to/CarbonDynamics
     $ R < data_prepare.R
 
-The script loads the inventory plot and fire data and preprocess it to create data input for the C dynamics model. It generates 3 Rdata files : Tree_list contains the monospecific black spruce diamater class data, 
+The script loads the inventory plot and fire data and preprocess it to create data input for the C dynamics model. It generates 3 Rdata files : Tree_list.Rdata contains the monospecific black spruce diamater-class data; spring_weighted_catch.Rdata and summer_weighted_catch.Rdata contain spring and summer head fire intensities, respectively, after accounting for fire size and variation in intensity within fire perimeter.  
 prepared for running the model.
 
 Also these plots are generated:
@@ -31,4 +31,4 @@ Also these plots are generated:
     $ R < carbon_dynamics.R
     $ R < simulation_experiments.R
     
-To run the model first load utils.R which contains all implemented functions. Then load carbon_dynamics.R with the main model code. Finally, in simulation_experiments.R, define the number of model iterationn and the levels of fire return interval and season of interest, run the model and save the output data into R objects.
+To run the model first load utils.R which contains all implemented functions. Then load carbon_dynamics.R with the main model code. Finally, in simulation_experiments.R, define the number of model iterations and the fire regime parameters of interest, run the model and save the output data into R objects.
