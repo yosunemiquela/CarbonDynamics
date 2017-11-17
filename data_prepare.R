@@ -151,6 +151,62 @@ subsetPlot <- subset(all_plots, (Drenaje  == "2_Bon"  |
 
 Plots <- subsetPlot
 
+##########################################
+## selects monospecific black spruce plots ##
+##########################################
+subpop <- function(reg, st, d= Plots){
+  res <- subset(d, FIRE_CODE %in% reg & stands%in%st,select="ID_PEP_MES")
+  return(res)
+}
+
+Sampled <- subpop (reg=c("A2","D4","B3","C3","E1","E3"), st=c("EnEn"), d=Plots)
+
+##########################################
+## associates plots with a tree list ##
+##########################################
+GetTrees <- function(T,Plots){
+  res <- NULL
+  for (i in Plots){
+    res<-rbind(res,subset(T,ID_PEP_MES %in% i))
+  }
+  return(res)
+}
+
+#############################################################
+## generates a matrix with number of trees per diameter class ##
+#############################################################
+
+
+process<- function (Sampled,Tree,Plots){
+  Sampled2 <- Sampled[sample(1:dim(Sampled)[1], size=1, replace=T),]
+  Tree.List <- GetTrees (Tree,Plots=Sampled2)
+  as.character(Tree.List$DBH)
+  as.factor(Tree.List$ESSENCE)
+  Tree.List <- as.data.frame(lapply(Tree.List[,],function(x)rep(x,25)))
+  range.DBH <- c(seq(1,30, by=2), 100)
+  Tree.List$DBH <- as.numeric(Tree.List$DBH)
+  stand <- table(cut(Tree.List$DBH, breaks=range.DBH, labels=seq(1,15)))
+  stand[1:4] <- stand[1:4]*10
+  ###Partition the basal area of big trees >31 cm and add number of trees that the surplus of basal area represents
+  basal_big_class <- 0.0707905544
+  BAB <- rep(0,100)
+  TBA <- 3.142*(Tree.List[Tree.List[,3]>31,3]/200)^2
+  BAB <- round(TBA/basal_big_class,digits=0)
+  y <- sum(BAB)
+  stand[15] <- stand[15]+y
+  res <- list(stand=stand,Sampled2=Sampled2)
+  return (res)
+}
+
+
+Plo<-numeric(length(Sampled[,1]))
+List_trees <- matrix(0,length(Sampled[,1]),15)
+
+for (i in 1:length(Sampled[,1])){
+  y<-process(Sampled,Tree,Plots)
+  List_trees[i,]<-y$stand
+  Plo[i]<-as.numeric(y$Sampled2)
+}
 
 
 ##############################################
@@ -269,9 +325,9 @@ plots_file <- file("data/Plots.Rdata", "wb")
 save(Plots, file = plots_file)
 close(plots_file)
 
-tree_file <- file("data/Tree.Rdata", "wb")
-save(Tree, file = tree_file)
-close(tree_file)
+List_trees <- file("data/Tree.Rdata", "wb")
+save(Tree, file = List_trees)
+close(List_trees)
 
 intensities_file <- file("data/Intensities.Rdata", "wb")
 save(Intensities, file = intensities_file)
