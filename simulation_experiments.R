@@ -2,14 +2,11 @@ source("carbon_dynamics.R")
 source("utils.R")
 
 
-load("data/Plots.Rdata", .GlobalEnv)
-
 load("data/Tree.Rdata")
-
 load("data/spring_weighted_catch.Rdata")
 Spring <- SpringWeightedCatch
-
-#load("data/summer_weighted_catch.Rdata")
+load("data/summer_weighted_catch.Rdata")
+Summer <- SummerWeightedCatch
 
 set.seed(10)
 n.iter <- 10      # plots to check
@@ -59,7 +56,7 @@ do.call(rbind, DOM_Inputs_list)
 
 
 for (i in 1:n.iter) {
-    CarbonModel <- exe(Y, FRI, Spring, Tree, Plots)
+    CarbonModel <- exe(Y, FRI, Spring, Tree)
     Ba_s[i, ] <- CarbonModel$BA
     Structure_s[i, ] <- CarbonModel$Structure
     Recruits_s[i, ] <- CarbonModel$Recruits

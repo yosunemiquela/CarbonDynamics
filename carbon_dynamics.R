@@ -25,23 +25,8 @@ source("utils.R")
 ## full model ##
 ################
 
-exe <- function(Y, FRI, Season, Tree, Plots) {
-    Sampled <- subpop (reg = c("A2", "D4", "B3", "C3", "E1", "E3"), st = c("EnEn"), d = Plots)
-    Sampled <- Sampled[sample(1:dim(Sampled)[1], size = 1, replace = T), ]
-    Tree.List <- GetTrees (Tree, Plots = Sampled)
-    as.character(Tree.List$DBH) 
-    as.factor(Tree.List$ESSENCE)
-    Tree.List <- as.data.frame(lapply(Tree.List[, ], function(x)rep(x, 25)))
-    range.DBH <- c(seq(1, 30, by = 2), 100)
-    Tree.List$DBH <- as.numeric(Tree.List$DBH)
-    stand <- table(cut(Tree.List$DBH, breaks=range.DBH, labels=seq(1,15)))
-    stand[1:4] <- stand[1:4]*10
-    basal_big_class <- 0.0707905544
-    BAB <- rep(0, 100)
-    TBA <- 3.142 * (Tree.List[Tree.List[, 3]>31, 3]/200)^2
-    BAB <- round(TBA/basal_big_class, digits = 0)
-    y <- sum(BAB)
-    stand[15] <- stand[15] + y
+exe <- function(Y, FRI, Season,Tree) {
+    stand <-sample(Tree[1,], replace = F)
     n <- length(stand)
     N1s <- rep(1, n)
     N0s <- rep(0, n)
@@ -50,9 +35,6 @@ exe <- function(Y, FRI, Season, Tree, Plots) {
     shannon <- 0
     ScH <- 0
     cl <- 0
-    stand <- rep(0, 15)
-
-
     dbhl  <- c(1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29)  # dbh lower limit
     dbhu <- c(3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31)  # dbh upper limit
     dbhq  <- sqrt((dbhu^3-dbhl^3)/((dbhu-dbhl) * 3))  # assuming a uniform dbh distribution over interval
