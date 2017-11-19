@@ -325,9 +325,9 @@ plots_file <- file("data/Plots.Rdata", "wb")
 save(Plots, file = plots_file)
 close(plots_file)
 
-List_trees <- file("data/Tree.Rdata", "wb")
-save(Tree, file = List_trees)
-close(List_trees)
+tree_file <- file("data/Tree.Rdata", "wb")
+save(Tree, file = tree_file)
+close(tree_file)
 
 intensities_file <- file("data/Intensities.Rdata", "wb")
 save(Intensities, file = intensities_file)
