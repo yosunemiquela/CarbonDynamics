@@ -329,7 +329,7 @@ exe <- function(Y, FRI, Season,Tree) {
         ctmp[6] <- ctmp[6] + Snags             # adding C from snags
         ctmp[7] <- ctmp[7] + Snagbranches      # adding C from small trees
         ctmp[9] <- ctmp[9] + SnagCoarse * (0.5) # adding C from coarse roots to AG fast
-        ctmp[10] <- ctmp[10] + SnagFine * (0.5) + SnagFoliage * (0.85)
+        ctmp[10] <- ctmp[10] + SnagFine * (0.5) + SnagFoliage 
         ctmp[12] <- ctmp[12] + SnagFine * (0.5)
         ctmp[13] <- ctmp[13] + SnagCoarse * (0.5)
         Inputs <- ctmp[6:14]  # how much C is incorporated into the DOMCpools including snags (mortality)
