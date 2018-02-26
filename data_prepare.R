@@ -298,25 +298,43 @@ yos <- approx(knownpoints$x, knownpoints$y, xout = aim, rule = 1)
 ProportionalIntensities <- yos$y
 ProportionalIntensities <- na.omit(ProportionalIntensities)
 PI <- sample(ProportionalIntensities, 24000, replace = T, prob = NULL)
-SpringFires <- Intensities[which(Intensities$SprSummer == "Spring"), ]
 
+SpringFires <- Intensities[which(Intensities$SprSummer == "Spring"), ]
 SpringFires$SupFin <- as.numeric(SpringFires$SupFin)
+SpringFires$ISec<- as.numeric(SpringFires$ISec)
+SpringFires$INT<-as.numeric(SpringFires$INT)
 TotalFireSizeSpring <- sum(SpringFires$SupFin)
 SpringFires$Weight <- SpringFires$SupFin / TotalFireSizeSpring
-SpringIntensitiesWeighted <- sample(SpringFires$INT, size = 24000, replace = T,
-                                    prob = SpringFires$Weight)
-SpringIntensitiesWeighted <- as.numeric(SpringIntensitiesWeighted)
+SpringFires$Numero<-as.numeric(SpringFires$Numero)
+SpringFires<-SpringFires[which(abs(SpringFires$SupFin) == ave(SpringFires$SupFin, SpringFires$Numero, 
+                                                              FUN=function(x) max(abs(x)))), ]##458
+SpringNumero<-sample(SpringFires$Numero,size=24000, replace=T, prob=SpringFires$Weight)
+SpringNumero<-as.data.frame(SpringNumero)
+colnames(SpringNumero)<-"Numero"
+newdataSpring<- left_join(SpringNumero,SpringFires, by = "Numero")
+newdataSpring$Catchpole <- as.numeric(newdataSpring$INT*PI)
 
-SummerFires <- Intensities[which(Intensities$SprSummer == "Summer"), ]
 
-SummerFires$SupFin <- as.numeric(SummerFires$SupFin)
-TotalFireSizeSpring <- sum(SummerFires$SupFin)
-SummerFires$Weight <- SummerFires$SupFin / TotalFireSizeSpring
-SummerIntensitiesWeighted <- sample(SummerFires$INT, size = 24000,
-                                    replace = T, prob = SummerFires$Weight)
-SummerIntensitiesWeighted <- as.numeric(SummerIntensitiesWeighted)
-SpringWeightedCatch <- as.numeric(SpringIntensitiesWeighted * PI)
-SummerWeightedCatch <- as.numeric(SummerIntensitiesWeighted * PI)
+
+SummerFires<-Intensities[which(Intensities$SprSummer== "Summer"),]
+length(1:dim(SummerFires)[1])##374
+SummerFires$SupFin<-as.numeric(SummerFires$SupFin)
+SummerFires$Numero<-as.numeric(SummerFires$Numero)
+TotalFireSizeSpring<-sum(SummerFires$SupFin)
+SummerFires$Weight<-SummerFires$SupFin/TotalFireSizeSpring
+SummerFires<-SummerFires[which(abs(SummerFires$SupFin) == ave(SummerFires$SupFin, SummerFires$Numero, 
+                                                              FUN=function(x) max(abs(x)))), ]
+length(1:dim(SummerFires)[1])##321
+SummerFires$Numero<- as.numeric(SummerFires$Numero)
+SummerFires$INT<- as.numeric(SummerFires$INT)
+SummerFires$ISec<-as.numeric(SummerFires$ISec)
+SummerNumero<-sample(SummerFires$Numero,size=24000, replace=T, prob=SummerFires$Weight)
+SummerNumero<-as.data.frame(SummerNumero)
+colnames(SummerNumero)<-"Numero"
+SummerNumero$Numero <- as.numeric(SummerNumero$Numero)
+newdataSummer<- left_join(SummerNumero,SummerFires, by = "Numero")
+newdataSummer$Catchpole <- as.numeric(newdataSummer$INT*PI)
+
 
 ########################
 ## save prepared data ##
@@ -333,12 +351,12 @@ intensities_file <- file("data/Intensities.Rdata", "wb")
 save(Intensities, file = intensities_file)
 close(intensities_file)
 
-spring_file <- file("data/spring_weighted_catch.Rdata", "wb")
-save(SpringWeightedCatch, file = spring_file)
+spring_file <- file("data/newdataSpring.Rdata", "wb")
+save(newdataSpring, file = spring_file)
 close(spring_file)
 
-summer_file = file("data/summer_weighted_catch.Rdata", "wb")
-save(SummerWeightedCatch, file = summer_file)
+summer_file = file("data/newdataSummer.Rdata", "wb")
+save(newdataSummer, file = summer_file)
 close(summer_file)
 
 
