@@ -93,6 +93,8 @@ exe <- function(Y, FRI, Season,Tree) {
     Mortality <- matrix(0, Y, n, byrow = TRUE)  # probability of mortality
     Structure <- numeric(Y)
     InitialIntensity <- numeric(Y)
+    DroughtCode <- numeric(Y)
+    FireSize <- numeric(Y)
     FireSeason <- numeric(Y)
     BALost <- numeric(Y)
     Delta_BA <- numeric(Y)
@@ -104,6 +106,8 @@ exe <- function(Y, FRI, Season,Tree) {
     ShiftHeights <- matrix(0, Y, n, byrow = TRUE)
     DiameterGrowth <- matrix(0, Y, n, byrow = TRUE)
     SnagCProduction <- numeric(Y)
+    SnagCProductionS <- numeric(Y)
+    SnagCProductionF <- numeric(Y)
     Turnover <- numeric(Y)
     DOMC_Pool <- matrix(0, Y, length(CPool), byrow = TRUE)
     DOM_Flux <- numeric(Y)
@@ -121,16 +125,42 @@ exe <- function(Y, FRI, Season,Tree) {
     Rh <- numeric(Y)
     CarbonCombusted <- numeric(Y)
     AnnualBiomassRecruits <- numeric(Y)
+    CarbonEmissions1 <- numeric(Y) 
+    CarbonEmissions2 <- numeric(Y) 
+    CarbonEmissions3 <- numeric(Y) 
+    NetBiomeProduction <- numeric(Y) 
+    FuelConsumed <- numeric(Y) 
 
     # main loop
     for (y in 1:Y) {
 
-        HeadIntensity <- sample(Season, size = 1, replace = F)
+        DataFire <- Season[sample(nrow(Season), size=1, replace=F),]
+        DC <- as.numeric(DataFire$ISec)
+        firesize <- as.numeric(DataFire$SupFin)
+        HeadIntensity <- as.numeric(DataFire$Catchpole)
         I <- HeadIntensity
         Istart  <- I
         shannon <- diversity(stand[5:15], index = "shannon", MARGIN = 1, base = exp(1)) ##updated shannon
         Structure[y] <- shannon
         Firedeaths <- rep(0, 15)
+        SnagsS <- 0
+        SnagbranchesS <- 0
+        SnagFoliageS <- 0
+        SnagCoarseS <- 0
+        SnagFineS <- 0
+        SnagsFire <- 0
+        SnagbranchesFire <- 0
+        SnagFoliageFire <- 0
+        SnagCoarseFire <- 0
+        SnagFineFire <- 0
+        carbon.consumed.medium <- 0
+        carbon.consumed.agfast <- 0
+        carbon.consumed.agvfast <- 0
+        carbon.consumed.agslow <- 0
+        carbon.emissions <- 0
+        CE <- 0
+        C <- 0
+        CC2<- 0
         BALost[y] <- 0
         bay <- sum(stand * baq)
         MAT <- 0.36
@@ -186,9 +216,7 @@ exe <- function(Y, FRI, Season,Tree) {
 
         # Calculate Biomass due to growth
         GrowthCBiomass <- sum(BioMassCarbon %*% as.matrix(stand))  # calculate biomass due to growth
-                                                                     # Biomass that has not been lost to turnover or mortality
-        Parcela[y, ] <- stand  # stand after regeneration, captures regeneration pulses
-        delta <- (GrowthCBiomass-ICB)
+        delta <- (GrowthCBiomass-ICB) # Biomass that has not been lost to turnover or mortality
 
         # Apply turnover
         # match IPCC Good Practice Guidance
@@ -232,77 +260,96 @@ exe <- function(Y, FRI, Season,Tree) {
         surviving <- mortality(stand, dbhq, baq)
         surviving[1:4] <- SaplingSurvival
         Senescencedeaths <- rbinom(N1s, stand, 1 - surviving)
-        deaths <- Senescencedeaths + Firedeaths
-        Muertos[y, ] <- deaths
         Senescence[y, ] <- Senescencedeaths
-        SnagCpools <- SnagsCarbon(deaths, BioMassCarbon)
-        Snags <- SnagCpools$SnagC
-        Snagbranches <- SnagCpools$SnagbranchC
-        SnagFoliage <- SnagCpools$SnagFoliage
-        SnagCoarse <- SnagCpools$SnagCoarse
-        SnagFine <- SnagCpools$SnagFine
         stand <- stand-Senescencedeaths        # fire deaths are taken care in the fire module
-        DeltaBA <- BAIncrement                 # net basal area increment after mortality (fire and senescence) and growth
-        DeltaStand <- sum(stand)               # net change in density after mortality (fire and senescence) and growth
-        if(sum(stand < 0) > 0)
-            stop(message = "neg count 3")
-        Delta_BA[y] <- DeltaBA
-        DeltaN[y, ] <- deaths + growth
-        CMortality <- Snags + Snagbranches + SnagFoliage + SnagCoarse + SnagFine
-
+        
         # Fire module
         # Evaluates if a fire arrives, its intensity, crowning, and post-fire tree mortality and regeneration.
         if(runif(1) < pBurn) {  # Determine if a fire happens
-            fire.year <- c(fire.year, y)
-            NF <- NF + 1  # Update number of fires that occurred during the simulation
-            RegenCohorts <- rep(0, RegenLagTime)  # KILL ALL regenerating trees
-            prefirestand <- stand
-            PreFireStand[y, ] <- prefirestand
-            NewRegen <- SeedProd(prefirestand, baq)
-            Fuel <- as.numeric(FuelClass(stand, dbhq))  # Kg/ha per dbh class
-            VF <- VerticalFuelProfile(Fuel, HeightUpdated, Base)
-            cl <- Crowning(I, HeightUpdated, Base, VF, b, DenCrit) #if there is crowning, update the crown layer affected by fire
-            cl <- ifelse (cl>0, UpdateCrownLayer(cl, HeightUpdated, Base, VF, b, DenCrit),
-                          Crowning(I, HeightUpdated, Base, VF, b, DenCrit))
-            u <- UpdateIntensity(I, HeightUpdated[cl])
-            I <- ifelse(cl > 0, max(UpdateIntensity(I, HeightUpdated[cl])), Istart)
-            ScH <- ScorchHeight(I)
-            CK <- CrownKill(I, HeightUpdated, CCR)
-            BurnMortP <- ScorchMortality(BarkThickness, CrownKill(I, HeightUpdated, CCR))
-            Firedeaths <- rbinom(N1s, stand, BurnMortP)
-            Firedeaths <- ifelse(is.na(Firedeaths), N0s, Firedeaths)
-            FireDeaths[y, ] <- Firedeaths
-            newstand <- stand-Firedeaths
-            severity <- Basalost(stand, baq, newstand)
-            stand <- newstand # update stand after a fire
-            InitialIntensity[y] <- I # adjusted intensity using Catchpole et.al 1992
-            #FireSeason[y] <- Season
-            BALost[y] <- severity
-            tmp3 <- CPool[3] * 0.392140        # carbon consumed in the medium carbon pool
-            tmp4 <- CPool[4] * 0.6415          # carbon consumed in the Ag fast carbon pool
-            tmp5 <- CPool[5] * 0.968533        # carbon consumed in the Ag very fast pool
-            tmp6 <- CPool[6] * 0.09001         # carbon consumed in the Ag slowpool
-            CPool[3] <- CPool[3]-tmp3
-            CPool[4] <- CPool[4]-tmp4
-            CPool[5] <- CPool[5]-tmp5
-            CPool[6] <- CPool[6]-tmp6
-            CC <- tmp3 + tmp4 + tmp5 + tmp6
+          FuelLoad <- sum(CPool[5],CPool[6])  # only AGslow and AGvf
+          fire.year <- c(fire.year, y)
+          NF <- NF + 1  # Update number of fires that occurred during the simulation
+          RegenCohorts <- rep(0, RegenLagTime)  # KILL ALL regenerating trees
+          prefirestand <- stand
+          PreFireStand[y, ] <- prefirestand
+          NewRegen <- SeedProd(prefirestand, baq)
+          Fuel <- as.numeric(FuelClass(stand, dbhq))  # Kg/ha per dbh class
+          VF <- VerticalFuelProfile(Fuel, HeightUpdated, Base)
+          cl <- Crowning(I, HeightUpdated, Base, VF, b, DenCrit) #if there is crowning, update the crown layer affected by fire
+          cl <- ifelse (cl>0, UpdateCrownLayer(cl, HeightUpdated, Base, VF, b, DenCrit),
+                        Crowning(I, HeightUpdated, Base, VF, b, DenCrit))
+          u <- UpdateIntensity(I, HeightUpdated[cl])
+          I <- ifelse(cl > 0, max(UpdateIntensity(I, HeightUpdated[cl])), Istart)
+          ScH <- ScorchHeight(I)
+          CK <- CrownKill(I, HeightUpdated, CCR)
+          BurnMortP <- ScorchMortality(BarkThickness, CrownKill(I, HeightUpdated, CCR))
+          Firedeaths <- rbinom(N1s, stand, BurnMortP)
+          Firedeaths <- ifelse(is.na(Firedeaths), N0s, Firedeaths)
+          FireDeaths[y, ] <- Firedeaths
+          newstand <- stand-Firedeaths
+          severity <- Basalost(stand, baq, newstand)
+          stand <- newstand # update stand after a fire
+          InitialIntensity[y] <- I # adjusted intensity using Catchpole et.al 1992
+          DroughtCode[y] <- DC
+          FireSize [y] <- firesize
+          BALost[y] <- severity
+          C <- 1.185*exp(-4.252)*exp(0.671*log(FuelLoad))*exp(0.71*log(DC))
+          pFF <- min(C/(CPool[5] + CPool[6]),1)
+          carbon.consumed.medium <- CPool[3]*0.392140  #carbon consumed in the medium carbon pool
+          carbon.consumed.agfast <- CPool[4]*0.6415    #carbon consumed in the Ag fast carbon pool
+          carbon.consumed.agvfast <- pFF * CPool[5]    #carbon consumed in the Ag very fast carbon pool
+          carbon.consumed.agslow <- pFF * CPool[6]     #carbon consumed in the Ag slow carbon pool
+          CPool[3] <- CPool[3]- carbon.consumed.medium
+          CPool[4] <- CPool[4]- carbon.consumed.agfast
+          CPool[5] <- CPool[5]- carbon.consumed.agvfast #carbon left in the Ag very fast pool
+          CPool[6] <- CPool[6]- carbon.consumed.agslow  #carbon left in the Ag slowpool
+          FuelConsumed [y] <- C
         } else {
-            NewRegen <- rpois(1, ifelse(shannon < 1.7, RegenRegular, RegenIrregular))
+          NewRegen <- rpois(1, ifelse(shannon < 1.7, RegenRegular, RegenIrregular))
         }
-
+        
+        
+        # Calculate carbon from fire-derived and senescencent trees
+        
+        deaths <- Senescencedeaths + Firedeaths
+        SnagCpools <- SnagsCarbon(Senescencedeaths,Firedeaths,BioMassCarbon)
+        SnagsS <- SnagCpools$SnagC
+        SnagbranchesS <- SnagCpools$SnagbranchC
+        SnagFoliageS <- SnagCpools$SnagFoliage
+        SnagCoarseS <- SnagCpools$SnagCoarse
+        SnagFineS <- SnagCpools$SnagFine
+        CMortalityS <- SnagsS+SnagbranchesS+SnagFoliageS+SnagCoarseS+ SnagFineS 
+        SnagsFire <- SnagCpools$SnagCF
+        SnagbranchesFire <- SnagCpools$SnagbranchCF
+        SnagFoliageFire <- SnagCpools$SnagFoliageF
+        SnagCoarseFire <- SnagCpools$SnagCoarseF
+        SnagFineFire <- SnagCpools$SnagFineF
+        CMortalityF <-  SnagsFire+SnagbranchesFire+SnagFoliageFire+SnagCoarseFire+SnagFineFire
+        Snags <- SnagsS+SnagsFire
+        Snagbranches <- SnagbranchesS+SnagbranchesFire
+        SnagFoliage <- SnagFoliageS+SnagFoliageFire
+        SnagCoarse <- SnagCoarseS+SnagCoarseFire
+        SnagFine <-  SnagFineS+SnagFineFire
+        CMortality <- Snags + Snagbranches + SnagFoliage + SnagCoarse + SnagFine
+        CE <-  SnagCpools$CE
+        carbon.emissions <- carbon.consumed.medium+carbon.consumed.agfast+ carbon.consumed.agvfast+carbon.consumed.agslow+carbon.emissions ##fire carbon emissions total
+        CC2 <- carbon.consumed.medium+carbon.consumed.agfast+ carbon.consumed.agvfast+carbon.consumed.agslow 
+        NBP <- NEP - carbon.emissions
+        
         # Add recruitment
+        
         Recruits[y] <- RegenCohorts[RegenLagTime]
         RegenCohorts <- c(NewRegen, RegenCohorts[1:RegenLagTime - 1])
         stand[1] <- stand[1] + Recruits[y]
         CCRRecruits  <- Recruits[y] * PCR[1]
         HeightRecruits  <- Recruits[y] * Top[1]
-
-
-       # Update biomass
+        Parcela[y, ] <- stand  # stand after regeneration, captures regeneration pulses
+        
+       
+        # Update biomass
         Biomass <- sum(BioMassCarbon %*% as.matrix(stand))
         ICB <- Biomass
-
+        
         # Dynamically updating crown ratios and heights of recruits (natural regenerated and fire derived)
         xH <- Top + adi  # Heightgrowth
         dH <- xH-Top     # deltaheight
@@ -314,7 +361,7 @@ exe <- function(Y, FRI, Season,Tree) {
         ShiftCR <- CCRnow + c(0, CCRgrowth[1:n - 1])
         ShiftCR[1] <- ShiftCR[1] + CCRRecruits
         CCR <- ifelse(stand > 0, pmin(MaximumCR, ShiftCR / TotalN), PCR)
-
+        
         # Updating heights
         Top <- Height(dbhq)
         HeightUpdated <- Top + adi  # Heightgrowth
@@ -323,8 +370,8 @@ exe <- function(Y, FRI, Season,Tree) {
         ShiftHeight[1] <- ShiftHeight[1] + HeightRecruits
         HeightUpdated <- ifelse(stand>0, ShiftHeight/TotalN, Top)
         Base <- HeightUpdated * (1-CCR)
-
-
+        
+        
         # Distribute turnover to carbon pools
         ctmp[6] <- ctmp[6] + Snags             # adding C from snags
         ctmp[7] <- ctmp[7] + Snagbranches      # adding C from small trees
@@ -334,11 +381,18 @@ exe <- function(Y, FRI, Season,Tree) {
         ctmp[13] <- ctmp[13] + SnagCoarse * (0.5)
         Inputs <- ctmp[6:14]  # how much C is incorporated into the DOMCpools including snags (mortality)
         CPool <- tmp[2:10] + Inputs # update the pools
-
-
+        
+        
         # Save results into objects
-        CarbonCombusted[y] <- CC
-        SnagCProduction[y] <- CMortality
+        Delta_BA[y] <- DeltaBA
+        DeltaN[y, ] <- deaths + growth
+        Muertos[y, ] <- deaths
+        SnagCProduction [y] <- CMortality
+        SnagCProductionS [y] <- CMortalityS
+        SnagCProductionF [y] <- CMortalityF
+        CarbonEmissions1[y] <- CE
+        CarbonEmissions2[y] <- CC2
+        CarbonEmissions3[y] <- carbon.emissions
         TotalLiveBiomass[y] <-   Biomass
         DOMC_Pool[y, ] <- CPool # Nine DOM carbon pools
         DOM_Flux[y] <- SoilCAtmFlux
@@ -346,6 +400,7 @@ exe <- function(Y, FRI, Season,Tree) {
         Turnover[y] <- BiomassLostTurnover
         NetPrimaryProductivity[y] <- NPP
         NetEcosystemProduction[y] <- NEP
+        NetBiomeProduction[y] <- NBP
         Rh[y] <- SoilCAtmFlux
         BA[y] <- bay
         CR[y, ] <- CCR
@@ -358,9 +413,9 @@ exe <- function(Y, FRI, Season,Tree) {
         Crecimiento[y, ] <- growth
         Muertos[y, ] <- deaths
         Size[y, ] <- stand # final size after all processes
+        
     }
-
-
+    
     res <- list(Parcela = Parcela, Size = Size, DeltaN = DeltaN, BA = BA,
                 PreFireStand = PreFireStand, Senescence = Senescence,
                 AppliedDecayRates = AppliedDecayRates,
@@ -370,11 +425,14 @@ exe <- function(Y, FRI, Season,Tree) {
                 DiameterGrowth = DiameterGrowth, CR = CR, CMortality = CMortality,
                 ShiftCrownratio = ShiftCrownratio, ShiftHeights = ShiftHeights,
                 Heights = Heights, BALost = BALost, NF = NF, InitialIntensity = InitialIntensity,
-                fire.year = fire.year, Recruits = Recruits, TotalLiveBiomass = TotalLiveBiomass,
+                DroughtCode=DroughtCode,fire.year = fire.year, Recruits = Recruits, TotalLiveBiomass = TotalLiveBiomass,
                 CarbonCombusted = CarbonCombusted, Turnover = Turnover, SnagCProduction = SnagCProduction,
                 DOMC_Pool = DOMC_Pool, DOM_Flux = DOM_Flux, DOM_Inputs = DOM_Inputs,
-                NetPrimaryProductivity = NetPrimaryProductivity, Rh = Rh,
-                NetEcosystemProduction = NetEcosystemProduction)
-
+                NetPrimaryProductivity = NetPrimaryProductivity, Rh = Rh,CarbonEmissions1=CarbonEmissions1,
+                CarbonEmissions2= CarbonEmissions2,CarbonEmissions3=CarbonEmissions3,
+                NetEcosystemProduction = NetEcosystemProduction,NetBiomeProduction=NetBiomeProduction,
+                FuelConsumed=FuelConsumed, FireSize=FireSize, SnagCProductionS=SnagCProductionS,
+                SnagCProductionF=SnagCProductionF,SnagCProduction=SnagCProduction)
+    
     return(res)
 }
