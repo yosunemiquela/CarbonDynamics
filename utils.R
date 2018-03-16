@@ -182,51 +182,54 @@ Fineroots <- function(dbh){  # <5mm. kg/tree Chen et al. 2004
 }
 
 
-SnagsCarbon <- function(mortality, BioMassCarbon) {
-    snags <- mortality
-    Stemwoodbig <- BioMassCarbon[1, 5:15] %*% (snags[5:15])
-    Barkmerchantable <- BioMassCarbon[2, 5:15] %*% (snags[5:15])
-    Stemwoodsmall <- BioMassCarbon[1, 1:4] %*% (snags[1:4])
-    Barksmall <- BioMassCarbon[2, 1:4] %*% (snags[1:4])
-    Branches <- BioMassCarbon[3, 1:15] %*% (snags[1:15])
-    Foliage <- BioMassCarbon[4, 1:15] %*% (snags[1:15])
-    CRoot <- BioMassCarbon[5, 1:15] %*% (snags[1:15])
-    FRoot <- BioMassCarbon[6, 1:15] %*% (snags[1:15])
-    SnagC <- Stemwoodbig + Barkmerchantable
-    SnagbranchC <- Branches + Stemwoodsmall + Barksmall
-    SnagFoliage <- Foliage
-    SnagCoarse <- CRoot
-    SnagFine <- FRoot
-    return(list(SnagC = SnagC, SnagbranchC = SnagbranchC, SnagFoliage = SnagFoliage, SnagCoarse = SnagCoarse, SnagFine = SnagFine))
+SnagsCarbon<-function(mortalitys,mortalityf,BioMassCarbon){
+  kpob <- 0.25
+  kpofr<- 0.045
+  kpofo <- 1
+  snags <- mortalitys
+  snagsf <- mortalityf
+  Stemwoodbig <- BioMassCarbon[1,5:15]%*%(snags[5:15])
+  Barkmerchantable <- BioMassCarbon[2,5:15]%*%(snags[5:15])
+  Stemwoodsmall <- BioMassCarbon[1,1:4]%*%(snags[1:4])
+  Barksmall <- BioMassCarbon[2,1:4]%*%(snags[1:4])
+  Branches <- BioMassCarbon[3,1:15]%*%(snags[1:15])
+  Foliage <- BioMassCarbon[4,1:15]%*%(snags[1:15])
+  CRoot <- BioMassCarbon[5,1:15]%*%(snags[1:15])
+  FRoot <- BioMassCarbon[6,1:15]%*%(snags[1:15])
+  SnagC <- Stemwoodbig+Barkmerchantable
+  SnagbranchC <- Branches+Stemwoodsmall+Barksmall
+  SnagFoliage <- Foliage
+  SnagCoarse <- CRoot
+  SnagFine <- FRoot
+  ###fire
+  StemwoodbigF <- BioMassCarbon[1,5:15]%*%(snagsf[5:15])
+  BarkmerchantableF <- BioMassCarbon[2,5:15]%*%(snagsf[5:15])
+  StemwoodsmallF <- BioMassCarbon[1,1:4]%*%(snagsf[1:4])
+  BarksmallF <- BioMassCarbon[2,1:4]%*%(snagsf[1:4])
+  BranchesF <- BioMassCarbon[3,1:15]%*%(snagsf[1:15])
+  FoliageF <- BioMassCarbon[4,1:15]%*%(snagsf[1:15])
+  CRootF <- BioMassCarbon[5,1:15]%*%(snagsf[1:15])
+  FRootF <- BioMassCarbon[6,1:15]%*%(snagsf[1:15])
+  SnagCF <- StemwoodbigF+BarkmerchantableF
+  SnagbranchCF <- BranchesF+StemwoodsmallF+BarksmallF
+  SnagFoliageF <- FoliageF
+  SnagCoarseF <- CRootF
+  SnagFineF <- FRootF
+  tmp1 <- FoliageF * kpofo
+  tmp2 <-  FRootF * kpofr
+  tmp3 <-   SnagbranchCF  *kpob
+  SnagFoliageF <- SnagFoliageF -tmp1
+  SnagFineF <- SnagFineF - tmp2
+  SnagbranchCF <-  SnagbranchCF -  tmp3
+  CE <- tmp1+tmp2+tmp3 
+  
+  return(list(SnagC=SnagC,SnagbranchC=SnagbranchC,SnagFoliage=SnagFoliage,SnagCoarse=SnagCoarse,SnagFine=SnagFine,
+              SnagCF=SnagCF, SnagbranchCF=SnagbranchCF,SnagFoliageF=SnagFoliageF,
+              SnagCoarseF=SnagCoarseF,SnagFineF=SnagFineF,CE=CE ))
 }
 
-SnagsCarbonFire<-function(mortality,BioMassCarbon){
-    POB <- 0.25
-    POFR <- 0.045
-    POFO <- 1
-    snags <- mortality
-    Stemwoodbig <- BioMassCarbon[1,5:15]%*%(snags[5:15])
-    Barkmerchantable <- BioMassCarbon[2,5:15]%*%(snags[5:15])
-    Stemwoodsmall <- BioMassCarbon[1,1:4]%*%(snags[1:4])
-    Barksmall <- BioMassCarbon[2,1:4]%*%(snags[1:4])
-    Branches <- BioMassCarbon[3,1:15]%*%(snags[1:15])
-    Foliage <- BioMassCarbon[4,1:15]%*%(snags[1:15])
-    CRoot <- BioMassCarbon[5,1:15]%*%(snags[1:15])
-    FRoot <- BioMassCarbon[6,1:15]%*%(snags[1:15])
-    SnagC <- Stemwoodbig+Barkmerchantable
-    SnagbranchC <- Branches+Stemwoodsmall+Barksmall
-    SnagFoliage <- Foliage
-    SnagCoarse <- CRoot
-    SnagFine <- FRoot
-    tmp1 <- Foliage * POFO
-    tmp2 <-  FRoot * POFR
-    tmp3 <-   SnagbranchC  * POB 
-    SnagFoliage <- SnagFoliage -tmp1
-    SnagFine <- SnagFine - tmp2
-    SnagbranchC <-  SnagbranchC -  tmp3
-    CE <- tmp1+tmp2+tmp3
-    return(list(SnagC=SnagC,SnagbranchC=SnagbranchC,SnagFoliage=SnagFoliage,SnagCoarse=SnagCoarse,SnagFine=SnagFine, CE=CE))
-}
+
+
 
 
 #  Kurz et al 2013
