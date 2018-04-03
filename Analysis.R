@@ -1,6 +1,8 @@
 library("reshape")
 library("ggplot2")
 library("nlme")
+library("plyr")
+library("grid")
 
 
 #####################
@@ -10,7 +12,6 @@ Spring60 <- load("FRI60_Spring.Rdata", .GlobalEnv)
 Summer60 <- load("FRI60_Summer.Rdata", .GlobalEnv)
 FRI60Spring <- data.frame(FRI60Spring)
 names(FRI60Spring)
-FRI60Spring$Season <- 1
 FRI60<-data.frame(rbind(FRI60Spring, FRI60Summer))
 length(FRI60[, 1])
 str(FRI60)
@@ -48,7 +49,6 @@ FRI700Spring <- data.frame(FRI700Spring)
 FRI700Spring$Season <- 1
 Summer700<-load("FRI700_Summer.Rdata", .GlobalEnv)
 FRI700Summer <- data.frame(FRI700Summer)
-FRI700Summer <- FRI700Summer[,-c(21,22,23)]
 FRI700<-data.frame(rbind(FRI700Spring,FRI700Summer))
 FRI700$Season
 
@@ -57,7 +57,7 @@ FRI1200Spring <- data.frame(FRI1200Spring)
 FRI1200Spring$Season <- 1
 Summer1200<-load("FRI1200_Summer.Rdata", .GlobalEnv)
 FRI1200<-data.frame(rbind(FRI1200Spring,FRI1200Summer))
-
+FRI1200$Season
 
 SpringNF<-load("FRINF_Spring.Rdata", .GlobalEnv)
 FRINFSpring <- data.frame(FRINFSpring)
@@ -66,7 +66,10 @@ SummerNF<-load("FRINF_Summer.Rdata", .GlobalEnv)
 FRINF<-data.frame(rbind(FRINFSpring,FRINFSummer))
 str(FRINF)
 FRINF$Season
+FRINF$NBP <- FRINF$NEP 
+FRINF <- FRINF[c(1,2,3,4,5,6,7,8,21,9,10,11,12,13,14,15,16,17,18,19,20)]
 
+               
 All<-rbind(FRI60,FRI100, FRI150,FRI300,FRI700,FRI1200,FRINF)
 All$FireReturnInterval <- factor(All$FireReturnInterval)
 levels(All$FireReturnInterval)[levels(All$FireReturnInterval)== "3e+17"] <- "NF"
@@ -80,7 +83,7 @@ as.factor(All$FireReturnInterval)
 KgMg<-(0.001)
 kghatogm2<-0.1
 All[,5] <- with(All, All[,5]*KgMg)
-All[,7:20] <- with(All, All[,7:20]*KgMg)
+All[,7:21] <- with(All, All[,7:21]*KgMg)
 All$FireReturnInterval <- factor(All$FireReturnInterval,
                                  levels=c('60','100','150','300','700','1200','NF'), ordered=TRUE)
 All$Organic<-(All$AGveryfast+All$AGslow)
@@ -93,6 +96,8 @@ All$Structure<-as.factor(All$Structure)
 #####################
 #Statistical Analysis#
 #####################
+ctrl <- lmeControl(opt='optim')
+
 ##Total Ecosystem C
 mod.ecs <- lme(EcosystemCStock~FireReturnInterval+Season+
                   FireReturnInterval:Season, random=~1|Structure,
@@ -119,10 +124,11 @@ varests <- as.numeric(VarCorr(mod.ecs)[1:2])# vector of variance estimates
 ICC <- varests[1]/sum(varests)
 
 
+
 ##Total DOM soil C
 
 mod.scs <- lme(SoilCStock~FireReturnInterval+Season +
-                 FireReturnInterval:Season, random=~1|Structure,
+                 FireReturnInterval:Season,control=ctrl, random=~1|Structure,
                  weights=varIdent(form=~1 | FireReturnInterval), data=All)
 mod.scs1 <- lme(SoilCStock~FireReturnInterval+Season, random=~1|Structure,
                 weights=varIdent(form=~1 | FireReturnInterval), data=All)
@@ -136,7 +142,7 @@ ICC <- varests[1]/sum(varests)
 coef(mod.scs)
 
 ##Biomass
-ctrl <- lmeControl(opt='optim')
+
 mod.bcs <- lme(BiomassLiveCStock~FireReturnInterval+Season +
                  FireReturnInterval:Season, random=~1|Structure,control=ctrl,
                  weights=varIdent(form=~1 | FireReturnInterval), data=All)
@@ -158,6 +164,13 @@ coef(mod.bcs)
 mod.org <- lme(Organic~FireReturnInterval+Season +
                  FireReturnInterval:Season, random=~1|Structure,
                  weights=varIdent(form=~1 | FireReturnInterval), data=All)
+
+mod.org1 <- lme(Organic~FireReturnInterval+Season, random=~1|Structure,
+               weights=varIdent(form=~1 | FireReturnInterval), data=All)
+
+## AIC
+loglikratio <- mod.org$logLik/mod.org1$logLik
+## 
 anova(mod.org)
 summary(mod.org)
 coef(mod.org)
@@ -169,6 +182,14 @@ coef(mod.org)
 mod.min<- lme(Mineral~FireReturnInterval+Season+FireReturnInterval*Season, 
               random=~1|Structure,control=ctrl,
               weights=varIdent(form=~1 |FireReturnInterval), data=All)
+
+mod.min1<- lme(Mineral~FireReturnInterval+Season, 
+              random=~1|Structure,control=ctrl,
+              weights=varIdent(form=~1 |FireReturnInterval), data=All)
+
+## AIC
+loglikratio <- mod.min$logLik/mod.min1$logLik
+## 
 anova(mod.min)
 summary(mod.min)
 varests <- as.numeric(VarCorr(mod.min)[1:2])# vector of variance estimates
@@ -180,9 +201,12 @@ mod.wood<- lme(WoodyDebris~FireReturnInterval+Season +
                  FireReturnInterval:Season, random=~1|Structure,,control=ctrl,
                  weights=varIdent(form=~1 |FireReturnInterval), data=All)
 
-mod.wood<- lme(WoodyDebris~FireReturnInterval+Season +
-                 FireReturnInterval:Season, random=~1|Structure,
+mod.wood1<- lme(WoodyDebris~FireReturnInterval+Season, random=~1|Structure,
                data=All)
+
+## AIC
+loglikratio <- mod.wood$logLik/mod.wood1$logLik
+## 
 anova(mod.wood)
 summary(mod.wood)
 varests <- as.numeric(VarCorr(mod.wood)[1:2])# vector of variance estimates
@@ -190,10 +214,79 @@ ICC <- varests[1]/sum(varests)
 coef(mod.wood)
 
 
+###NPP
+mod.npp<- lme(NPP~FireReturnInterval+Season +
+                 FireReturnInterval:Season, random=~1|Structure,,control=ctrl,
+               weights=varIdent(form=~1 |FireReturnInterval), data=All)
+
+mod.npp1<- lme(NPP~FireReturnInterval+Season, random=~1|Structure,
+                data=All)
+
+## AIC
+loglikratio <- mod.npp$logLik/mod.npp1$logLik
+## 
+anova(mod.npp)
+summary(mod.npp)
+varests <- as.numeric(VarCorr(mod.npp)[1:2])# vector of variance estimates
+ICC <- varests[1]/sum(varests)
+coef(mod.npp)
+
+###NEP
+mod.nep<- lme(NEP~FireReturnInterval+Season +
+                FireReturnInterval:Season, random=~1|Structure,,control=ctrl,
+              weights=varIdent(form=~1 |FireReturnInterval), data=All)
+
+mod.nep1<- lme(NEP~FireReturnInterval+Season, random=~1|Structure,
+               data=All)
+
+## AIC
+loglikratio <- mod.nep$logLik/mod.nep1$logLik
+## 
+anova(mod.nep)
+summary(mod.nep)
+varests <- as.numeric(VarCorr(mod.nep)[1:2])# vector of variance estimates
+ICC <- varests[1]/sum(varests)
+coef(mod.nep)
+
+###NBP
+mod.nbp<- lme(NBP~FireReturnInterval+Season +
+                FireReturnInterval:Season, random=~1|Structure,,control=ctrl,
+              weights=varIdent(form=~1 |FireReturnInterval), data=All)
+
+mod.nbp1<- lme(NBP~FireReturnInterval+Season, random=~1|Structure,
+               data=All)
+
+## AIC
+loglikratio <- mod.nbp$logLik/mod.nbp1$logLik
+## 
+anova(mod.nbp)
+summary(mod.nbp)
+varests <- as.numeric(VarCorr(mod.nbp)[1:2])# vector of variance estimates
+ICC <- varests[1]/sum(varests)
+coef(mod.nbp)
 
 
-library(plyr)
-library(ggplot2)
+###Rh
+mod.rh<- lme(SoilRespiration~FireReturnInterval+Season +
+                FireReturnInterval:Season, random=~1|Structure,,control=ctrl,
+              weights=varIdent(form=~1 |FireReturnInterval), data=All)
+
+mod.rh1<- lme(SoilRespiration~FireReturnInterval+Season, random=~1|Structure,
+               data=All)
+
+## AIC
+loglikratio <- mod.nbp$logLik/mod.nbp1$logLik
+## 
+anova(mod.rh)
+summary(mod.rh)
+varests <- as.numeric(VarCorr(mod.rh)[1:2])# vector of variance estimates
+ICC <- varests[1]/sum(varests)
+coef(mod.rh)
+
+
+
+
+##
 summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
                       conf.interval=.95, .drop=TRUE) {
   
@@ -232,18 +325,170 @@ summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
 
 
 
-
-head(All)
-
 npp <- summarySE(All, measurevar="NPP", groupvars=c("FireReturnInterval"))
 nep <- summarySE(All, measurevar="NEP", groupvars=c("FireReturnInterval"))
-rh<- summarySE(All, measurevar="SoilRespiration", groupvars=c("FireReturnInterval"))
 nbp <- summarySE(All, measurevar="NBP", groupvars=c("FireReturnInterval"))
+rh<- summarySE(All, measurevar="SoilRespiration", groupvars=c("FireReturnInterval"))
+nbp <- summarySE(All, measurevar="NBP", groupvars=c("FireReturnInterval","Season"))
 ecs <- summarySE(All, measurevar="EcosystemCStock", groupvars=c("FireReturnInterval","Season"))
-ecs <- summarySE(All, measurevar="EcosystemCStock", groupvars=c("FireReturnInterval"))
 scs<- summarySE(All, measurevar="SoilCStock", groupvars=c("FireReturnInterval","Season"))
-bcs<-summarySE(All, measurevar="BiomassLiveCStock", groupvars=c("FireReturnInterval"))
+bcs<-summarySE(All, measurevar="BiomassLiveCStock", groupvars=c("FireReturnInterval","Season"))
 mscs<-summarySE(All, measurevar="Mineral", groupvars=c("FireReturnInterval","Season"))
-mscs<-summarySE(All, measurevar="Mineral", groupvars=c("FireReturnInterval"))
-ol<-summarySE(All, measurevar="Organic", groupvars=c("FireReturnInterval"))
+ol<-summarySE(All, measurevar="Organic", groupvars=c("FireReturnInterval","Season"))
 wd<-summarySE(All, measurevar="WoodyDebris", groupvars=c("FireReturnInterval"))
+
+
+# # # # # # # #
+#Graphics
+# # # # # # # #
+
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  require(grid)
+  
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+  
+  numPlots = length(plots)
+  
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                     ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+  
+  if (numPlots==1) {
+    print(plots[[1]])
+    
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
+
+my_grobA <- grobTree(textGrob("A)", x=0.01,  y=0.95, hjust=0,
+                             gp=gpar(col="black", fontsize=10, fontface="bold")))
+my_grobB <- grobTree(textGrob("B)", x=0.01,  y=0.95, hjust=0,
+                             gp=gpar(col="black", fontsize=10, fontface="bold")))
+my_grobC <- grobTree(textGrob("C)", x=0.01,  y=0.95, hjust=0,
+                             gp=gpar(col="black", fontsize=10, fontface="bold")))
+my_grobD <- grobTree(textGrob("D)", x=0.01,  y=0.95, hjust=0,
+                             gp=gpar(col="black", fontsize=10, fontface="bold")))
+my_grobE <- grobTree(textGrob("E)", x=0.01,  y=0.95, hjust=0,
+                             gp=gpar(col="black", fontsize=10, fontface="bold")))
+my_grobF <- grobTree(textGrob("F)", x=0.01,  y=0.95, hjust=0,
+                             gp=gpar(col="black", fontsize=10, fontface="bold")))
+
+
+
+
+pd <- position_dodge(0.1)
+pn <-ggplot(npp, aes(x = FireReturnInterval, y = NPP),
+            ylim = c(3.0,4.0)) + labs(x="Fire Return Interval",y="NPP (MgC/ha*yr)")+
+  geom_errorbar(aes(ymin = NPP-ci, ymax=NPP+ci), colour="black", width=.1, position=pd)
+pnp <- pn + geom_line(position=pd) + geom_point(size=2, colour="black") 
+pnpp <-pnp + theme(axis.text = element_text(colour = "black", size = 12),
+                  axis.title = element_text(size = 12, color = "black"))
+pnpp1 <- pnpp + theme_bw()
+pnpp2 <- pnpp1+theme(legend.position="none")
+pnpp2 <- pnpp2+annotation_custom(my_grobA)
+pnpp3 <- pnpp2+scale_y_continuous(limits=c(3.0,4.0))
+
+
+pne <- ggplot(nep, aes(x=FireReturnInterval, y=NEP, colour=FireReturnInterval)) +
+  labs(x ="Fire Return Interval",y ="NEP (MgC/ha*yr)")+
+  geom_errorbar(aes(ymin = NEP-ci, ymax = NEP+ci), colour ="black", width=.1, position=pd)
+pnep <- pne+geom_line(position=pd) + geom_point(size =2, colour="black") +
+  geom_hline(yintercept = 0)
+pnep1 <- pnep + theme(axis.text = element_text(colour = "black", size = 12),
+                    axis.title = element_text(size = 12, color = "black"))
+pnep1 <- pnep1 + theme_bw()
+pnep2 <- pnep1+theme(legend.position="none")
+pnep2 <- pnep2+annotation_custom(my_grobC)
+
+
+pnb <- ggplot(nbp, aes(x = FireReturnInterval, y = NBP, colour = FireReturnInterval)) + 
+  labs(x="Fire Return Interval",y="NBP (MgC/ha*yr)") +
+  geom_errorbar(aes(ymin = NBP-ci, ymax=NBP+ci), colour = "black", width=.1, position=pd)
+pnbp <- pnb+geom_line(position = pd) + geom_point(size=2, colour="black") + 
+  geom_hline(yintercept = 0)
+pnbp1 <- pnbp + theme(axis.text = element_text(colour = "black", size = 12),
+                    axis.title = element_text(size = 12, color = "black"))
+pnbp1 <- pnbp1 + theme_bw()
+pnbp2 <- pnbp1+theme(legend.position="none")
+pnbp2 <- pnbp2+annotation_custom(my_grobD)
+
+
+
+pso <- ggplot(rh, aes(x=FireReturnInterval, y=SoilRespiration, colour=FireReturnInterval), ylim = c(2.7,4.0))+labs(x ="Fire Return Interval",y ="Heterotrophic respiration (MgC/ha*yr)")+ geom_errorbar(aes(ymin=SoilRespiration-ci, ymax=SoilRespiration+ci), colour="black", 
+                width=.1)
+psoi <- pso+geom_line() + geom_point(size=2, colour="black") 
+psoil <- psoi + theme(axis.text = element_text(colour = "black", size = 12),
+        axis.title = element_text(size = 12, color = "black"))
+psoil1 <- psoil + theme_bw()
+psoil1 <- psoil1 + theme(legend.position ="none")
+psoil1 <- psoil1 + annotation_custom(my_grobB)
+psoil2 <- psoil1+scale_y_continuous(limits=c(3.0,4.0))
+
+fluxes <- multiplot(pnpp3,pnep2,psoil2,pnbp2,cols=2)
+
+
+
+
+
+black.12.text <- element_text(face="plain",color = "black", size =12)
+black.bold.text <- element_text(face = "plain", color = "black", size=14)
+##Ecosystem C stock
+pd <- position_dodge(0.1)
+#p<-ggplot(ecs, aes(x=FireReturnInterval, y=EcosystemCStock, group=Season)) + ylim(180, 260) +
+p<-ggplot(ecs, aes(x=FireReturnInterval, y=EcosystemCStock)) + ylim(190, 290) +
+  labs(x="Fire Return Interval",y="Total ecosystem C Stock (MgC/ha)")+
+  geom_errorbar(aes(ymin=EcosystemCStock-ci, ymax=EcosystemCStock+ci), colour="black", width=.1, position=pd)
+#p1<-p+geom_line(aes(linetype=Season),position=pd, size=0.5) +
+p1<-p+geom_point(position=pd,size=2) 
+#annotate("text", x=0.8, y=190, label= "1", size=4) +
+#annotate("text", x = 0.8, y=200, label = "2", size=4)
+p2<-p1+ theme_bw()
+p2a<-p2+theme(legend.position="none", title=black.12.text, axis.title = black.12.text, text=black.12.text)
+p3<-p2a+annotation_custom(my_grobA)
+pdf("Eco.pdf", width=6,height=4, paper='special')
+p3
+dev.off()
+
+
+pd <- position_dodge(0.1)
+p<-ggplot(bcs, aes(x=FireReturnInterval, y=BiomassLiveCStock)) + ylim(38,60) +
+  labs(x="Fire Return Interval",y="Live Biomass C Stock (MgC/ha)")+
+  geom_errorbar(aes(ymin=BiomassLiveCStock-ci, ymax=BiomassLiveCStock+ci), colour="black", width=.1, position=pd)
+p1<-p+geom_point(position=pd,size=2) 
+p6a<-p1 + theme_bw()
+p6ab<-p6a+theme(legend.position="none", title=black.12.text, axis.title = black.12.text, text=black.12.text)
+p6<-p6ab+annotation_custom(my_grobB)
+pdf("Bio.pdf", width=6,height=4, paper='special')
+p6
+dev.off()
+
+pd <- position_dodge(0.1)
+p<-ggplot(ol, aes(x=FireReturnInterval, y=Organic)) + ylim(38,54) +
+  labs(x="Fire Return Interval",y="Organic Layer C Stock (MgC/ha)")+
+  geom_errorbar(aes(ymin=Organic-ci, ymax=Organic+ci), colour="black", width=.1)
+p1<-p+geom_point(size=2) 
+p2<-p1+theme_bw()
+p7a<-p2+theme( legend.position="none", title=black.12.text, axis.title = black.12.text, text=black.12.text)
+p7<-p7a+annotation_custom(my_grobC)
+pdf("C:/Users/psladmin/Documents/ModelOutput2/Defense_graphs/Org.pdf", width=6,height=4, paper='special')
+p7
+dev.off()
