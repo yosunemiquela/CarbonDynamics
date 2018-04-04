@@ -446,49 +446,86 @@ psoil2 <- psoil1+scale_y_continuous(limits=c(3.0,4.0))
 fluxes <- multiplot(pnpp3,pnep2,psoil2,pnbp2,cols=2)
 
 
-
-
-
 black.12.text <- element_text(face="plain",color = "black", size =12)
 black.bold.text <- element_text(face = "plain", color = "black", size=14)
+
 ##Ecosystem C stock
 pd <- position_dodge(0.1)
-#p<-ggplot(ecs, aes(x=FireReturnInterval, y=EcosystemCStock, group=Season)) + ylim(180, 260) +
-p<-ggplot(ecs, aes(x=FireReturnInterval, y=EcosystemCStock)) + ylim(190, 290) +
+p <- ggplot(ecs, aes(x=FireReturnInterval, y=EcosystemCStock, group=Season)) + ylim(200,300) +
   labs(x="Fire Return Interval",y="Total ecosystem C Stock (MgC/ha)")+
   geom_errorbar(aes(ymin=EcosystemCStock-ci, ymax=EcosystemCStock+ci), colour="black", width=.1, position=pd)
-#p1<-p+geom_line(aes(linetype=Season),position=pd, size=0.5) +
-p1<-p+geom_point(position=pd,size=2) 
-#annotate("text", x=0.8, y=190, label= "1", size=4) +
-#annotate("text", x = 0.8, y=200, label = "2", size=4)
-p2<-p1+ theme_bw()
+p1 <- p+geom_point(aes(shape=Season), size=2,position=pd)
+p2 <- p1+ scale_shape_manual(values = c(19,5))+
+annotate("text", x=1.3, y=240, label= "1", size=4) +
+annotate("text", x = 1.3, y=232, label = "2", size=4)
+p2<-p2+ theme_bw()
 p2a<-p2+theme(legend.position="none", title=black.12.text, axis.title = black.12.text, text=black.12.text)
 p3<-p2a+annotation_custom(my_grobA)
-pdf("Eco.pdf", width=6,height=4, paper='special')
-p3
-dev.off()
 
 
 pd <- position_dodge(0.1)
-p<-ggplot(bcs, aes(x=FireReturnInterval, y=BiomassLiveCStock)) + ylim(38,60) +
+p <- ggplot(bcs, aes(x=FireReturnInterval, y=BiomassLiveCStock, group=Season)) + ylim(35,60) +
   labs(x="Fire Return Interval",y="Live Biomass C Stock (MgC/ha)")+
   geom_errorbar(aes(ymin=BiomassLiveCStock-ci, ymax=BiomassLiveCStock+ci), colour="black", width=.1, position=pd)
-p1<-p+geom_point(position=pd,size=2) 
-p6a<-p1 + theme_bw()
-p6ab<-p6a+theme(legend.position="none", title=black.12.text, axis.title = black.12.text, text=black.12.text)
-p6<-p6ab+annotation_custom(my_grobB)
-pdf("Bio.pdf", width=6,height=4, paper='special')
-p6
-dev.off()
+p1 <- p+geom_point(aes(shape=Season),size=2,position=pd) 
+p6a <- p1+ scale_shape_manual(values = c(19,5))+
+  annotate("text", x=1.3, y=43, label= "1", size=4) +
+  annotate("text", x = 1.3, y=41, label = "2", size=4)
+p6a1 <- p6a + theme_bw()
+p6ab <- p6a1+theme(legend.position="none", title=black.12.text, axis.title = black.12.text, text=black.12.text)
+p6 <- p6ab+annotation_custom(my_grobB)
+
 
 pd <- position_dodge(0.1)
-p<-ggplot(ol, aes(x=FireReturnInterval, y=Organic)) + ylim(38,54) +
-  labs(x="Fire Return Interval",y="Organic Layer C Stock (MgC/ha)")+
-  geom_errorbar(aes(ymin=Organic-ci, ymax=Organic+ci), colour="black", width=.1)
-p1<-p+geom_point(size=2) 
-p2<-p1+theme_bw()
+p <- ggplot(ol, aes(x=FireReturnInterval, y=Organic, group=Season)) + ylim(40,55) +
+labs(x="Fire Return Interval",y="Organic Layer C Stock (Mg C ha-1)")+
+geom_errorbar(aes(ymin=Organic-se, ymax=Organic+se), colour="black", width=.1)
+p1 <- p+geom_point(aes(shape=Season),position=pd, size=2) 
+p6a <- p1+ scale_shape_manual(values = c(19,5))+
+  annotate("text", x=1.3, y=45, label= "1", size=4) +
+  annotate("text", x = 1.3, y=44, label = "2", size=4)
+p2 <- p6a+theme_bw()
 p7a<-p2+theme( legend.position="none", title=black.12.text, axis.title = black.12.text, text=black.12.text)
 p7<-p7a+annotation_custom(my_grobC)
-pdf("C:/Users/psladmin/Documents/ModelOutput2/Defense_graphs/Org.pdf", width=6,height=4, paper='special')
-p7
-dev.off()
+
+
+##Woody debris stock
+pd <- position_dodge(0.1)
+p<-ggplot(wd, aes(x=FireReturnInterval, y=WoodyDebris))+ ylim(45,55)  +
+  labs(x="Fire Return Interval",y="Woody debris C Stock (MgC/ha)")+
+  geom_errorbar(aes(ymin=WoodyDebris-ci, ymax=WoodyDebris+ci), colour="black", width=.1, position=pd)
+p1<-p+geom_point(position=pd,size=2) 
+p2<-p1 + theme_bw()
+p9a<-p2+theme(legend.position="none", title=black.12.text, axis.title = black.12.text, text=black.12.text)
+p9<-p9a+annotation_custom(my_grobD)
+
+
+##Mineral stock
+pd <- position_dodge(0.1)
+p<-ggplot(mscs, aes(x=FireReturnInterval, y=Mineral,  group=Season)) + ylim(90, 126) +
+  labs(x="Fire Return Interval",y="Mineral Soil C Stock (MgC/ha)")+
+  geom_errorbar(aes(ymin=Mineral-ci, ymax=Mineral+ci), colour="black", width=.1, position=pd)
+p1<-p+geom_point(aes(shape=Season),position=pd,size=2) +
+  scale_shape_manual(values=c(19,5))+
+  annotate("text", x=1.3, y=102, label= "1", size=4) +
+  annotate("text", x = 1.3, y=98, label = "2", size=4)
+p2<-p1 + theme_bw()
+p8a<-p2+theme(legend.position="none", title=black.12.text, axis.title = black.12.text, text=black.12.text)
+p8<-p8a+annotation_custom(my_grobE)
+
+
+pd <- position_dodge(0.1)
+p4<-ggplot(scs, aes(x=FireReturnInterval, y=SoilCStock, group=Season)) + ylim(180, 240) +
+  labs(x="Fire Return Interval",y="DOM C Stock (MgC/ha)")+
+  geom_errorbar(aes(ymin=SoilCStock-ci, ymax=SoilCStock+ci), colour="black", width=.1, position=pd)
+p4a<-p4 +geom_point(aes(shape=Season),position=pd,size=2) +
+  scale_shape_manual(values=c(19, 5))+
+  annotate("text", x=1.3, y=197, label= "1", size=4) +
+  annotate("text", x = 1.3, y=191, label = "2", size=4)
+p4ab<-p4a+theme_bw()
+p5<-p4ab + theme(legend.position="none", title=black.12.text, axis.title = black.12.text, text=black.12.text)
+p5<-p5+annotation_custom(my_grobF)
+
+
+a<-multiplot(p3,p9,p6,p8,p7,p5, cols=3)
+
