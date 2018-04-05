@@ -553,10 +553,28 @@ summariesoverall <- function (fri){
 
 # Do this for levels of interest
 s <- summaries(fri= "NF",season=2,structure="Irregular")
-
-
 overallmean <- summariesoverall(fri="NF")
 
+
+##########################################################
+#Supplementary material#
+##########################################################
+anova(lm(INT~SprSummer, data=Intensities))#F=5.84,p=0.01
+anova(lm(ISec~INT*SprSummer, data=Intensities))#F=12.9 p<0.00001 
+#strong difference between Spring and Summer, and the relation with intensity varies with season
+
+par(mfrow=c(1,2))
+plot(SpringFires$DR~SpringFires$INT, xlab="Intensity (kW/m2)", ylab="DC", main="Spring",ylim=c(0,500),xlim=c(0,35000) )
+abline(lm(SpringFires$DR~SpringFires$INT),col = "red")
+plot(SummerFires$DR~SummerFires$INT, xlab="Intensity (kW/m2)", ylab="DC", main="Summer",ylim=c(0,500),xlim=c(0,35000))
+abline(lm(SummerFires$DR~SummerFires$INT),col = "red")
+
+
+plot(NEP60[,4800]*KgMg,type="l",col="purple", xlab="Simulation year", ylab="Fluxes (MgC/ha*yr)",ylim=c(-35,35))
+lines(NPP60[,4800]*KgMg,col="green")
+lines(NBP60[,4800]*KgMg,col="blue")
+lines(CE60[,4800]*KgMg,col="red")
+legend(150,-15, legend=c("NPP","NEP","NBP","CC"),lty=c(1,1,1),bty = "n",col=c("green","purple","blue","red")) 
 
 
 sn<-summarySE(All, measurevar="Snags", groupvars=c("FireReturnInterval"))
@@ -591,7 +609,7 @@ my_grobI = grobTree(textGrob("I)", x=0.01,  y=0.95, hjust=0,
                              gp=gpar(col="black", fontsize=12, fontface="bold")))
 
 pd <- position_dodge(0.1)
-p<-ggplot(sn, aes(x=FireReturnInterval, y=Snags)) + ylim(3.5,7.2) +
+p<-ggplot(sn, aes(x=FireReturnInterval, y=Snags)) + ylim(5,7.5) +
   labs(x="Fire Return Interval",y="Snags (MgC/ha)")+
   geom_errorbar(aes(ymin=Snags-ci, ymax=Snags+ci), colour="black", width=.1)
 p1<-p+geom_point(size=2) 
@@ -601,7 +619,7 @@ p7<-p7a+annotation_custom(my_grobA)
 
 
 pd <- position_dodge(0.1)
-p<-ggplot(sb, aes(x=FireReturnInterval, y=SnagBranch)) + ylim(1.5,2.2) +
+p<-ggplot(sb, aes(x=FireReturnInterval, y=SnagBranch)) + ylim(1.5,2.7) +
   labs(x="Fire Return Interval",y="SnagBranch (MgC/ha)")+
   geom_errorbar(aes(ymin=SnagBranch-ci, ymax=SnagBranch+ci), colour="black", width=.1)
 p1<-p+geom_point(size=2) 
@@ -611,7 +629,7 @@ p8<-p7a+annotation_custom(my_grobB)
 
 
 pd <- position_dodge(0.1)
-p<-ggplot(am, aes(x=FireReturnInterval, y=AGMedium)) + ylim(16,33) +
+p<-ggplot(am, aes(x=FireReturnInterval, y=AGMedium)) + ylim(27,34) +
   labs(x="Fire Return Interval",y="AG Medium (MgC/ha)")+
   geom_errorbar(aes(ymin=AGMedium-se, ymax=AGMedium+se), colour="black", width=.1)
 p1<-p+geom_point(size=2) 
@@ -620,7 +638,7 @@ p7a<-p2+theme( legend.position="none", title=black.12.text, axis.title = black.1
 p9<-p7a+annotation_custom(my_grobC)
 
 pd <- position_dodge(0.1)
-p<-ggplot(af, aes(x=FireReturnInterval, y=AGfast)) + ylim(8,12) +
+p<-ggplot(af, aes(x=FireReturnInterval, y=AGfast)) + ylim(9,12) +
   labs(x="Fire Return Interval",y="AG fast (MgC/ha)")+
   geom_errorbar(aes(ymin=AGfast-se, ymax=AGfast+se), colour="black", width=.1)
 p1<-p+geom_point(size=2) 
@@ -630,7 +648,7 @@ p10<-p7a+annotation_custom(my_grobD)
 
 
 pd <- position_dodge(0.1)
-p<-ggplot(avf, aes(x=FireReturnInterval, y=AGveryfast)) + ylim(7,11) +
+p<-ggplot(avf, aes(x=FireReturnInterval, y=AGveryfast)) + ylim(7,10) +
   labs(x="Fire Return Interval",y="AG very fast (MgC/ha)")+
   geom_errorbar(aes(ymin=AGveryfast-se, ymax=AGveryfast+se), colour="black", width=.1)
 p1<-p+geom_point(size=2) 
@@ -640,7 +658,7 @@ p11<-p7a+annotation_custom(my_grobE)
 
 
 pd <- position_dodge(0.1)
-p<-ggplot(as, aes(x=FireReturnInterval, y=AGslow)) + ylim(30,43) +
+p<-ggplot(as, aes(x=FireReturnInterval, y=AGslow)) + ylim(35,44) +
   labs(x="Fire Return Interval",y="AG slow (MgC/ha)")+
   geom_errorbar(aes(ymin=AGslow-se, ymax=AGslow+se), colour="black", width=.1)
 p1<-p+geom_point(size=2) 
@@ -660,7 +678,7 @@ p13<-p7a+annotation_custom(my_grobG)
 
 
 pd <- position_dodge(0.1)
-p<-ggplot(bgf, aes(x=FireReturnInterval, y=BGfast)) + ylim(2,5) +
+p<-ggplot(bgf, aes(x=FireReturnInterval, y=BGfast)) + ylim(3,5) +
   labs(x="Fire Return Interval",y="BG fast (MgC/ha)")+
   geom_errorbar(aes(ymin=BGfast-se, ymax=BGfast+se), colour="black", width=.1)
 p1<-p+geom_point(size=2) 
@@ -671,14 +689,13 @@ p14<-p7a+annotation_custom(my_grobH)
 
 
 pd <- position_dodge(0.1)
-p<-ggplot(bgs, aes(x=FireReturnInterval, y=BGslow)) + ylim(65,120) +
+p<-ggplot(bgs, aes(x=FireReturnInterval, y=BGslow)) + ylim(90,122) +
   labs(x="Fire Return Interval",y="BG slow (MgC/ha)")+
   geom_errorbar(aes(ymin=BGslow-se, ymax=BGslow+se), colour="black", width=.1)
 p1<-p+geom_point(size=2) 
 p2<-p1+theme_bw()
 p7a<-p2+theme( legend.position="none", title=black.12.text, axis.title = black.12.text, text=black.12.text)
 p15<-p7a+annotation_custom(my_grobI)
-
 
 
 nnn<-multiplot(p7,p10,p13,p8,p11,p14,p9,p12,p15,cols=3)
