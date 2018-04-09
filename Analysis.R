@@ -569,12 +569,42 @@ abline(lm(SpringFires$DR~SpringFires$INT),col = "red")
 plot(SummerFires$DR~SummerFires$INT, xlab="Intensity (kW/m2)", ylab="DC", main="Summer",ylim=c(0,500),xlim=c(0,35000))
 abline(lm(SummerFires$DR~SummerFires$INT),col = "red")
 
+##Load data on C emissions trends among FRI
 
-plot(NEP60[,4800]*KgMg,type="l",col="purple", xlab="Simulation year", ylab="Fluxes (MgC/ha*yr)",ylim=c(-35,35))
-lines(NPP60[,4800]*KgMg,col="green")
-lines(NBP60[,4800]*KgMg,col="blue")
-lines(CE60[,4800]*KgMg,col="red")
-legend(150,-15, legend=c("NPP","NEP","NBP","CC"),lty=c(1,1,1),bty = "n",col=c("green","purple","blue","red")) 
+load("~/Desktop/ManuscriptEcosystems/Final2/NewSimulationsCarbonCombustion/60/FNBP60.RData")
+load("~/Desktop/ManuscriptEcosystems/Final2/NewSimulationsCarbonCombustion/100/FNBP100.RData")
+load("~/Desktop/ManuscriptEcosystems/Final2/NewSimulationsCarbonCombustion/150/FNBP150.RData")
+load("~/Desktop/ManuscriptEcosystems/Final2/NewSimulationsCarbonCombustion/300/FNBP300.RData")
+load("~/Desktop/ManuscriptEcosystems/Final2/NewSimulationsCarbonCombustion/700/NBP700.RData")
+load("~/Desktop/ManuscriptEcosystems/Final2/NewSimulationsCarbonCombustion/1200/NBP1200.RData")
+
+
+NBP60 <- data.frame(NBP60)
+NBP100 <- data.frame(NBP100)
+NBP150 <- data.frame(NBP150)
+NBP300 <- data.frame(NBP300)
+NBP700 <- data.frame(NBP700)
+NBP1200 <- data.frame(NBP1200)
+
+
+Emissions60 <- colMeans(NBP60*KgMg)
+Emissions100 <- colMeans(NBP100*KgMg)
+Emissions150 <- colMeans(NBP150*KgMg)
+Emissions300 <- colMeans(NBP300*KgMg)
+Emissions700 <- colMeans(NBP700*KgMg)
+Emissions1200 <- colMeans(NBP1200*KgMg)
+
+plot(Emissions60[20:4800],type="l",col="red", xlab="Simulation time", ylab="Total emissions (MgC/ha*yr)",ylim=c(-0.7,1), xlim=c(0,5000))
+lines(Emissions100[20:4800],col="orange")
+lines(Emissions150[20:4800],col="green")
+lines(Emissions300[20:4800],col="blue")
+lines(Emissions700[20:4800],col="purple")
+lines(Emissions1200[20:4800],col="black")
+abline(h = 0)
+legend(500,0.9, legend=c("60","100","150","300","700","1200"),
+horiz=TRUE,lty=c(1,1,1,1,1),bty = "y",col=c("red","orange","green","blue","purple","black")) 
+
+
 
 
 sn<-summarySE(All, measurevar="Snags", groupvars=c("FireReturnInterval"))
@@ -700,3 +730,65 @@ p15<-p7a+annotation_custom(my_grobI)
 
 nnn<-multiplot(p7,p10,p13,p8,p11,p14,p9,p12,p15,cols=3)
 
+#####################################
+#Load data on fire regime attributes#
+##################################### 
+SpringNF60 <- load("FRINF60Extra_Spring.Rdata", .GlobalEnv)
+SpringBAL60 <- load("FRIBAL60Extra_Spring.Rdata", .GlobalEnv)  
+SpringDC60 <- load("FRIDC60Extra_Spring.Rdata", .GlobalEnv)
+SpringINT60 <- load("FRIINT60Extra_Spring.Rdata", .GlobalEnv)
+SpringSCP60 <- load("FRISCP60Extra_Spring.Rdata", .GlobalEnv)
+SpringFC60 <- load("FRIFuelCons60Extra_Spring.Rdata", .GlobalEnv)
+SpringFS60 <- load("FRIFS60Extra_Spring.Rdata", .GlobalEnv)
+
+
+SummerNF60 <- load("FRINF60Extra_Summer.Rdata", .GlobalEnv)
+SummerBAL60 <- load("FRIBAL60Extra_Summer.Rdata", .GlobalEnv)  
+SummerDC60 <- load("FRIDC60Extra_Summer.Rdata", .GlobalEnv)
+SummerINT60 <- load("FRIINT60Extra_Summer.Rdata", .GlobalEnv)
+SummerSCP60 <- load("FRISCP60Extra_Summer.Rdata", .GlobalEnv)
+SummerFC60 <- load("FRIFuelCons60Extra_Summer.Rdata", .GlobalEnv)
+SummerFS60 <- load("FRIFS60Extra_Summer.Rdata", .GlobalEnv)
+
+SpringNF1200 <- load("FRINF1200Extra_Spring.Rdata", .GlobalEnv)
+SpringBAL1200 <- load("FRIBAL1200Extra_Spring.Rdata", .GlobalEnv)  
+SpringDC1200 <- load("FRIDC1200Extra_Spring.Rdata", .GlobalEnv)
+SpringINT1200 <- load("FRIINT1200Extra_Spring.Rdata", .GlobalEnv)
+SpringSCP1200 <- load("FRISCP1200Extra_Spring.Rdata", .GlobalEnv)
+SpringFC1200 <- load("FRIFuelCons1200Extra_Spring.Rdata", .GlobalEnv)
+SpringFS1200 <- load("FRIFS1200Extra_Spring.Rdata", .GlobalEnv)
+
+SummerNF1200<- load("FRINF1200Extra_Summer.Rdata", .GlobalEnv)
+SummerBAL1200 <- load("FRIBAL1200Extra_Summer.Rdata", .GlobalEnv)  
+SummerDC1200 <- load("FRIDC1200Extra_Summer.Rdata", .GlobalEnv)
+SummerINT1200 <- load("FRIINT1200Extra_Summer.Rdata", .GlobalEnv)
+SummerSCP1200 <- load("FRISCP1200Extra_Summer.Rdata", .GlobalEnv)
+SummerFC1200 <- load("FRIFuelCons1200Extra_Summer.Rdata", .GlobalEnv)
+SummerFS1200<- load("FRIFS1200Extra_Summer.Rdata", .GlobalEnv)
+SummerCOMB1200<- load("FRICOMB1200Extra_Summer.Rdata", .GlobalEnv)
+BaLost
+DC
+Intensities
+SnagCProduction
+fuelconsumed
+FS
+
+mean(x,na.rm=TRUE)
+sd(NumberFires)
+
+x <- BaLost[,4790]
+valuesm <- rep(0,length(x[,1]))
+valuess <- rep(0,length(x[,1]))
+means <- 0
+esde <- 0
+  for (i in 1:length(x[,1])){
+    tmp <- x[,i]
+    tmp2 <- subset(tmp,tmp>0)   
+    valuesm[i] <- mean(tmp2)
+    valuess[i] <- sd(tmp2)
+    
+means <- mean(valuesm, na.rm=TRUE)
+esde <- mean(valuess,na.rm=TRUE)
+}
+means 
+esde
