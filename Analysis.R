@@ -114,16 +114,25 @@ abline(h=0, lty=2)
 anova(mod.ecs)
 summary(mod.ecs)
 ##check relative variability of intercept with respect to the corresponding fixed effect (Pinheiro and Bates 2001, Section 4.3.2, p. 191)
-(17.9)/abs(fixef(mod.ecs)[1])*100
+(14.6)/abs(fixef(mod.ecs)[1])*100
 ranef(mod.ecs)
 fixef(mod.ecs)
-coef(mod.ecs1)[2,]
-coef(mod.ecs1)
+coef(mod.ecs)[2,]
+coef(mod.ecs)
 Var_Random_effect <- as.numeric(VarCorr(mod.ecs))
 varests <- as.numeric(VarCorr(mod.ecs)[1:2])# vector of variance estimates
+#variance explained by structure
 ICC <- varests[1]/sum(varests)
+#test significance of random effect
+mod.ecsre <- lme(EcosystemCStock~FireReturnInterval+Season+
+                 FireReturnInterval:Season, random=~1|Structure,
+                , data=All, method="ML")
+mod.ecsre2 <- lm(EcosystemCStock~FireReturnInterval+Season+
+                   FireReturnInterval:Season,
+                 , data=All)
 
-
+chi <- -2*logLik(mod.ecsre)[1]-logLik(mod.ecsre2)[1]
+p <- 1-pchisq(chi,df=1)
 
 ##Total DOM soil C
 
@@ -138,8 +147,19 @@ loglikratio <- mod.scs$logLik/mod.scs1$logLik
 anova(mod.scs)
 summary(mod.scs)
 varests <- as.numeric(VarCorr(mod.scs)[1:2])# vector of variance estimates
+#variance explained by structure
 ICC <- varests[1]/sum(varests)
 coef(mod.scs)
+#test significance of random effect
+mod.scsre <- lme(SoilCStock~FireReturnInterval+Season+
+                   FireReturnInterval:Season, random=~1|Structure,
+                 , data=All, method="ML")
+mod.scsre2 <- lm(SoilCStock~FireReturnInterval+Season+
+                   FireReturnInterval:Season,
+                 , data=All)
+
+chi <- -2*logLik(mod.scsre )[1]-logLik(mod.scsre2)[1]
+p <- 1-pchisq(chi,df=1)
 
 ##Biomass
 
@@ -157,8 +177,19 @@ loglikratio <- mod.bcs$logLik/mod.bcs1$logLik
 anova(mod.bcs)
 summary(mod.bcs)
 varests <- as.numeric(VarCorr(mod.bcs)[1:2])# vector of variance estimates
+#variance explained by structure
 ICC <- varests[1]/sum(varests)
 coef(mod.bcs)
+#test significance of random effect
+mod.bcsre <- lme(BiomassLiveCStock~FireReturnInterval+Season+
+                   FireReturnInterval:Season, random=~1|Structure,
+                 , data=All, method="ML")
+mod.bcsre2 <- lm(BiomassLiveCStock~FireReturnInterval+Season+
+                   FireReturnInterval:Season,
+                 , data=All)
+
+chi <- -2*logLik(mod.bcsre )[1]-logLik(mod.bcsre2)[1]
+p <- 1-pchisq(chi,df=1)
 
 ###Organic
 mod.org <- lme(Organic~FireReturnInterval+Season +
@@ -175,8 +206,20 @@ anova(mod.org)
 summary(mod.org)
 coef(mod.org)
 varests <- as.numeric(VarCorr(mod.org)[1:2])# vector of variance estimates
+#variance explained by structure
 ICC <- varests[1]/sum(varests)
 coef(mod.org)
+#test significance of random effect
+
+mod.orgre <- lme(Organic~FireReturnInterval+Season+
+                   FireReturnInterval:Season, random=~1|Structure,
+                 , data=All, method="ML")
+mod.orgre2 <- lm(Organic~FireReturnInterval+Season+
+                   FireReturnInterval:Season,
+                 , data=All)
+
+chi <- -2*logLik(mod.orgre)[1]-logLik(mod.orgre2)[1]
+p <- 1-pchisq(chi,df=1)
 
 ###Mineral
 mod.min<- lme(Mineral~FireReturnInterval+Season+FireReturnInterval*Season, 
@@ -193,9 +236,20 @@ loglikratio <- mod.min$logLik/mod.min1$logLik
 anova(mod.min)
 summary(mod.min)
 varests <- as.numeric(VarCorr(mod.min)[1:2])# vector of variance estimates
+#variance explained by structure
 ICC <- varests[1]/sum(varests)
 coef(mod.min)
+#test significance of random effect
 
+mod.minre <- lme(Mineral~FireReturnInterval+Season+
+                   FireReturnInterval:Season, random=~1|Structure,
+                 , data=All, method="ML")
+mod.minre2 <- lm(Mineral~FireReturnInterval+Season+
+                   FireReturnInterval:Season,
+                 , data=All)
+
+chi <- -2*logLik(mod.minre)[1]-logLik(mod.minre2)[1]
+p <- 1-pchisq(chi,df=1)
 ###Woody debris
 mod.wood<- lme(WoodyDebris~FireReturnInterval+Season +
                  FireReturnInterval:Season, random=~1|Structure,,control=ctrl,
@@ -210,9 +264,20 @@ loglikratio <- mod.wood$logLik/mod.wood1$logLik
 anova(mod.wood)
 summary(mod.wood)
 varests <- as.numeric(VarCorr(mod.wood)[1:2])# vector of variance estimates
+#variance explained by structure
 ICC <- varests[1]/sum(varests)
 coef(mod.wood)
+#test significance of random effect
 
+mod.woodre <- lme(WoodyDebris~FireReturnInterval+Season+
+                   FireReturnInterval:Season, random=~1|Structure,
+                 , data=All, method="ML")
+mod.woodre2 <- lm(WoodyDebris~FireReturnInterval+Season+
+                   FireReturnInterval:Season,
+                 , data=All)
+
+chi <- -2*logLik(mod.woodre)[1]-logLik(mod.woodre2)[1]
+p <- 1-pchisq(chi,df=1)
 
 ###NPP
 mod.npp<- lme(NPP~FireReturnInterval+Season +
@@ -228,8 +293,22 @@ loglikratio <- mod.npp$logLik/mod.npp1$logLik
 anova(mod.npp)
 summary(mod.npp)
 varests <- as.numeric(VarCorr(mod.npp)[1:2])# vector of variance estimates
+#variance explained by structure
 ICC <- varests[1]/sum(varests)
 coef(mod.npp)
+
+#test significance of random effect
+
+mod.nppre <- lme(NPP~FireReturnInterval+Season+
+                    FireReturnInterval:Season, random=~1|Structure,
+                  , data=All, method="ML")
+mod.nppre2 <- lm(NPP~FireReturnInterval+Season+
+                    FireReturnInterval:Season,
+                  , data=All)
+
+chi <- -2*logLik(mod.nppre )[1]-logLik(mod.nppre2)[1]
+p <- 1-pchisq(chi,df=1)
+
 
 ###NEP
 mod.nep<- lme(NEP~FireReturnInterval+Season +
@@ -245,8 +324,22 @@ loglikratio <- mod.nep$logLik/mod.nep1$logLik
 anova(mod.nep)
 summary(mod.nep)
 varests <- as.numeric(VarCorr(mod.nep)[1:2])# vector of variance estimates
+#variance explained by structure
 ICC <- varests[1]/sum(varests)
 coef(mod.nep)
+
+#test significance of random effect
+
+mod.nepre <- lme(NEP~FireReturnInterval+Season+
+                   FireReturnInterval:Season, random=~1|Structure,
+                 , data=All, method="ML")
+mod.nepre2 <- lm(NEP~FireReturnInterval+Season+
+                   FireReturnInterval:Season,
+                 , data=All)
+
+chi <- -2*logLik(mod.nepre )[1]-logLik(mod.nepre2)[1]
+p <- 1-pchisq(chi,df=1)
+
 
 ###NBP
 mod.nbp<- lme(NBP~FireReturnInterval+Season +
@@ -265,7 +358,17 @@ varests <- as.numeric(VarCorr(mod.nbp)[1:2])# vector of variance estimates
 ICC <- varests[1]/sum(varests)
 coef(mod.nbp)
 
+#test significance of random effect
 
+mod.nbpre <- lme(NBP~FireReturnInterval+Season+
+                   FireReturnInterval:Season, random=~1|Structure,
+                 , data=All, method="ML")
+mod.nbpre2 <- lm(NBP~FireReturnInterval+Season+
+                   FireReturnInterval:Season,
+                 , data=All)
+
+chi <- -2*logLik(mod.nbpre )[1]-logLik(mod.nbpre2)[1]
+p <- 1-pchisq(chi,df=1)
 ###Rh
 mod.rh<- lme(SoilRespiration~FireReturnInterval+Season +
                 FireReturnInterval:Season, random=~1|Structure,,control=ctrl,
@@ -283,7 +386,17 @@ varests <- as.numeric(VarCorr(mod.rh)[1:2])# vector of variance estimates
 ICC <- varests[1]/sum(varests)
 coef(mod.rh)
 
+#test significance of random effect
 
+mod.rhre <- lme(SoilRespiration~FireReturnInterval+Season+
+                   FireReturnInterval:Season, random=~1|Structure,
+                 , data=All, method="ML")
+mod.rhre2 <- lm(SoilRespiration~FireReturnInterval+Season+
+                   FireReturnInterval:Season,
+                 , data=All)
+
+chi <- -2*logLik(mod.rhre )[1]-logLik(mod.rhre2 )[1]
+p <- 1-pchisq(chi,df=1)
 
 
 ##
@@ -602,7 +715,7 @@ lines(Emissions700[20:4800],col="purple")
 lines(Emissions1200[20:4800],col="black")
 abline(h = 0)
 legend(500,0.9, legend=c("60","100","150","300","700","1200"),
-horiz=TRUE,lty=c(1,1,1,1,1),bty = "y",col=c("red","orange","green","blue","purple","black")) 
+horiz=T,lty=c(1,1,1,1,1),bty = "n",col=c("red","orange","green","blue","purple","black")) 
 
 
 
