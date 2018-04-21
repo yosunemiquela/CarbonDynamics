@@ -1,5 +1,7 @@
 # Carbon Dynamics
 
+Author: Dr. Yosune Miquelajauregui Graf
+
 ## About this model
 
 Hybrid model that simulates boreal forest carbon dynamics. It is composed of three modules that interact dynamically: stand dynamics, carbon dynamics and fire severity. It operates at the scale of 1.0 ha. It calculates and tracks carbon stocks in nine above- and belowground pools and estimates carbon fluxes. Parameters can be changed to better represent the type of vegetation under study.
@@ -19,7 +21,9 @@ The data_prepare.R script loads the inventory plot and fire data and preprocess 
 
 
 ### Run model
-
+ 
+ The model is run in R (version 2.15.0)
+ 
     # cd to this projects directory
     $  cd /path/to/CarbonDynamics
     $ R < data_prepare.R
