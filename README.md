@@ -1,6 +1,6 @@
-# Carbon Dynamics
+# Modelling Carbon Dynamics in Boreal Forests of Eastern Canada
 
-Author: Dr. Yosune Miquelajauregui Graf
+## Author: Dr. Yosune Miquelajauregui Graf
 
 ## About this model
 
