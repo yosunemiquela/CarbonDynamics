@@ -312,6 +312,7 @@ exe <- function(Y, FRI, Season,Tree) {
         # Calculate carbon from fire-derived and senescencent trees
         
         deaths <- Senescencedeaths + Firedeaths
+        DeltaBA<- BAIncrement-sum(deaths*baq) ##net basal area increment after mortality (fire and senescence) and growth
         SnagCpools <- SnagsCarbon(Senescencedeaths,Firedeaths,BioMassCarbon)
         SnagsS <- SnagCpools$SnagC
         SnagbranchesS <- SnagCpools$SnagbranchC
