@@ -442,8 +442,9 @@ npp <- summarySE(All, measurevar="NPP", groupvars=c("FireReturnInterval"))
 nep <- summarySE(All, measurevar="NEP", groupvars=c("FireReturnInterval"))
 nbp <- summarySE(All, measurevar="NBP", groupvars=c("FireReturnInterval"))
 rh<- summarySE(All, measurevar="SoilRespiration", groupvars=c("FireReturnInterval"))
-nbp <- summarySE(All, measurevar="NBP", groupvars=c("FireReturnInterval","Season"))
+nbp <- summarySE(All, measurevar="NBP", groupvars=c("FireReturnInterval"))
 ecs <- summarySE(All, measurevar="EcosystemCStock", groupvars=c("FireReturnInterval","Season"))
+#ecs <- summarySE(All, measurevar="EcosystemCStock", groupvars=c("FireReturnInterval"))
 scs<- summarySE(All, measurevar="SoilCStock", groupvars=c("FireReturnInterval","Season"))
 bcs<-summarySE(All, measurevar="BiomassLiveCStock", groupvars=c("FireReturnInterval","Season"))
 mscs<-summarySE(All, measurevar="Mineral", groupvars=c("FireReturnInterval","Season"))
@@ -558,6 +559,10 @@ psoil2 <- psoil1+scale_y_continuous(limits=c(3.0,4.0))
 
 fluxes <- multiplot(pnpp3,pnep2,psoil2,pnbp2,cols=2)
 
+tiff('figure4.tiff', units="in", width=7, height=7, res=300)
+fluxes <- multiplot(pnpp3,pnep2,psoil2,pnbp2,cols=2)
+dev.off()
+
 
 black.12.text <- element_text(face="plain",color = "black", size =12)
 black.bold.text <- element_text(face = "plain", color = "black", size=14)
@@ -642,7 +647,9 @@ p5<-p5+annotation_custom(my_grobF)
 
 a<-multiplot(p3,p9,p6,p8,p7,p5, cols=3)
 
-
+tiff('figure3.tiff', units="in", width=9, height=9, res=300)
+a<-multiplot(p3,p9,p6,p8,p7,p5, cols=3)
+dev.off()
 ##########################################################
 #Obtain descriptive statistics by FRI, Season and Structure#
 ##########################################################
@@ -676,21 +683,29 @@ anova(lm(INT~SprSummer, data=Intensities))#F=5.84,p=0.01
 anova(lm(ISec~INT*SprSummer, data=Intensities))#F=12.9 p<0.00001 
 #strong difference between Spring and Summer, and the relation with intensity varies with season
 
+tiff('figureS2.tiff', units="in", width=9, height=5, res=300)
 par(mfrow=c(1,2))
-plot(SpringFires$DR~SpringFires$INT, xlab="Intensity (kW/m2)", ylab="DC", main="Spring",ylim=c(0,500),xlim=c(0,35000) )
-abline(lm(SpringFires$DR~SpringFires$INT),col = "red")
-plot(SummerFires$DR~SummerFires$INT, xlab="Intensity (kW/m2)", ylab="DC", main="Summer",ylim=c(0,500),xlim=c(0,35000))
-abline(lm(SummerFires$DR~SummerFires$INT),col = "red")
+plot(SpringFires$ISec~SpringFires$INT, xlab="Intensity (kW/m2)", ylab="DC", main="Spring",ylim=c(0,500),xlim=c(0,35000) )
+abline(lm(SpringFires$ISec~SpringFires$INT),col = "red")
+plot(SummerFires$ISec~SummerFires$INT, xlab="Intensity (kW/m2)", ylab="DC", main="Summer",ylim=c(0,500),xlim=c(0,35000))
+abline(lm(SummerFires$ISec~SummerFires$INT),col = "red")
+dev.off()
 
 ##Load data on C emissions trends among FRI
 
-load("~/Desktop/ManuscriptEcosystems/Final2/NewSimulationsCarbonCombustion/60/FNBP60.RData")
-load("~/Desktop/ManuscriptEcosystems/Final2/NewSimulationsCarbonCombustion/100/FNBP100.RData")
-load("~/Desktop/ManuscriptEcosystems/Final2/NewSimulationsCarbonCombustion/150/FNBP150.RData")
-load("~/Desktop/ManuscriptEcosystems/Final2/NewSimulationsCarbonCombustion/300/FNBP300.RData")
-load("~/Desktop/ManuscriptEcosystems/Final2/NewSimulationsCarbonCombustion/700/NBP700.RData")
-load("~/Desktop/ManuscriptEcosystems/Final2/NewSimulationsCarbonCombustion/1200/NBP1200.RData")
+load("ManuscriptEcosystems/Final2/NewSimulationsCarbonCombustion/60/FNBP60.RData")
+load("ManuscriptEcosystems/Final2/NewSimulationsCarbonCombustion/100/FNBP100.RData")
+load("ManuscriptEcosystems/Final2/NewSimulationsCarbonCombustion/150/FNBP150.RData")
+load("ManuscriptEcosystems/Final2/NewSimulationsCarbonCombustion/300/FNBP300.RData")
+load("ManuscriptEcosystems/Final2/NewSimulationsCarbonCombustion/700/NBP700.RData")
+load("ManuscriptEcosystems/Final2/NewSimulationsCarbonCombustion/1200/NBP1200.RData")
 
+NEP60 <- data.frame(NEP60)
+NEP100 <- data.frame(NEP100)
+NEP150 <- data.frame(NEP150)
+NEP300 <- data.frame(NEP300)
+NEP700 <- data.frame(NEP700)
+NEP1200 <- data.frame(NEP1200)
 
 NBP60 <- data.frame(NBP60)
 NBP100 <- data.frame(NBP100)
@@ -707,7 +722,8 @@ Emissions300 <- colMeans(NBP300*KgMg)
 Emissions700 <- colMeans(NBP700*KgMg)
 Emissions1200 <- colMeans(NBP1200*KgMg)
 
-plot(Emissions60[20:4800],type="l",col="red", xlab="Simulation time", ylab="Total emissions (MgC/ha*yr)",ylim=c(-0.7,1), xlim=c(0,5000))
+tiff('figureS4.tiff', units="in", width=9, height=5, res=300)
+plot(Emissions60[20:4800],type="l",col="red", xlab="Simulation time", ylab="NBP (MgC/ha*yr)",ylim=c(-0.7,1), xlim=c(0,5000))
 lines(Emissions100[20:4800],col="orange")
 lines(Emissions150[20:4800],col="green")
 lines(Emissions300[20:4800],col="blue")
@@ -716,7 +732,7 @@ lines(Emissions1200[20:4800],col="black")
 abline(h = 0)
 legend(500,0.9, legend=c("60","100","150","300","700","1200"),
 horiz=T,lty=c(1,1,1,1,1),bty = "n",col=c("red","orange","green","blue","purple","black")) 
-
+dev.off()
 
 
 
@@ -843,6 +859,9 @@ p15<-p7a+annotation_custom(my_grobI)
 
 nnn<-multiplot(p7,p10,p13,p8,p11,p14,p9,p12,p15,cols=3)
 
+tiff('figureS5.tiff', units="in", width=9, height=9, res=300)
+nnn<-multiplot(p7,p10,p13,p8,p11,p14,p9,p12,p15,cols=3)
+dev.off()
 #####################################
 #Load data on fire regime attributes#
 ##################################### 
@@ -853,6 +872,7 @@ SpringINT60 <- load("FRIINT60Extra_Spring.Rdata", .GlobalEnv)
 SpringSCP60 <- load("FRISCP60Extra_Spring.Rdata", .GlobalEnv)
 SpringFC60 <- load("FRIFuelCons60Extra_Spring.Rdata", .GlobalEnv)
 SpringFS60 <- load("FRIFS60Extra_Spring.Rdata", .GlobalEnv)
+SpringCOMB60 <- load("FRICOMB60Extra_Spring.Rdata", .GlobalEnv)
 
 
 SummerNF60 <- load("FRINF60Extra_Summer.Rdata", .GlobalEnv)
@@ -886,10 +906,19 @@ SnagCProduction
 fuelconsumed
 FS
 
+
+Emissions60 <-NEP60-NBP60
+Emissions100 <-NEP100-NBP100
+Emissions150 <-NEP150-NBP150
+Emissions300 <-NEP300-NBP300
+Emissions700 <-NEP700-NBP700
+Emissions1200 <-NEP1200-NBP1200
+
+
 mean(x,na.rm=TRUE)
 sd(NumberFires)
 
-x <- BaLost[,4790]
+x <- fuelconsumed
 valuesm <- rep(0,length(x[,1]))
 valuess <- rep(0,length(x[,1]))
 means <- 0

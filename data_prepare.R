@@ -277,10 +277,10 @@ Intensities$Numero.y <- NULL
 names(Intensities)[c(2, 3, 4, 5, 6, 7, 8, 12)] <- c("Annee", "JA", "Comb",
                                                     "iLat", "iLon", "INT",
                                                     "Domaine", "Numero")
-Intensities$SprSummer <- ifelse(Intensities$Season == "4"  |
-                                Intensities$Season == "5"  |
-                                Intensities$Season == "6",
+Intensities$SprSummer <- ifelse(Intensities$Season == "5"  |
+                                  Intensities$Season == "6",
                                 "Spring", "Summer")
+                                
 as.factor(Intensities$SprSummer)
 
 
