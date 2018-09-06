@@ -1,4 +1,6 @@
-# Carbon Dynamics
+# Modelling Carbon Dynamics in Boreal Forests of Eastern Canada
+
+## Author: Dr. Yosune Miquelajauregui Graf
 
 ## About this model
 
@@ -19,7 +21,9 @@ The data_prepare.R script loads the inventory plot and fire data and preprocess 
 
 
 ### Run model
-
+ 
+ The model is run in R (version 2.15.0)
+ 
     # cd to this projects directory
     $  cd /path/to/CarbonDynamics
     $ R < data_prepare.R
